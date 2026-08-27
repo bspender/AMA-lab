@@ -49,7 +49,20 @@ This file contains interview-derived inputs for the ideation Goal Card. It is co
 ## Priority Emerging Technology CSA Scenarios
 
 - First priority: architecture decision and tradeoff analysis.
-- Additional priority scenarios remain to be established in Cycle 0.
+- Rank cross-domain CSA decision loops ahead of narrow product or workload coverage.
+- Use the work types below as evidence of audience relevance, not as a quota requiring equal representation.
+- A candidate meets the immediate-applicability proxy when a CSA can adapt its loop pattern to at least one listed work type in less than one day using existing Copilot access and safe local inputs.
+
+### Target Audience and Relevance Evidence
+
+Assume a Microsoft Cloud Solution Architect working across Data & AI, Application Innovation, and Emerging Technology scenarios.
+
+| Work category | Relevant work types |
+|---|---|
+| Traditional delivery | Architecture reviews; customer discovery; migration planning; modernization planning; design documentation; workshop preparation; solution recommendations |
+| Strategic advisory | Competitive analysis; use-case validation; Azure cost optimization; data and AI sovereignty; agentic developer enablement; governance and operating models; AI transformation planning; tokenomics and cost analysis |
+| Emerging technology | Researching agentic patterns; evaluating agent frameworks; comparing models and model-routing strategies; agentic cybersecurity; agent-team design; work-graph design; second-brain architectures; agentic data-readiness assessments; agent memory and learning systems; graph engineering patterns; human/agent operating models |
+| Microsoft platform | M365 Copilot adoption and use-case discovery; M365 Copilot readiness; Copilot Studio agent design, evaluation, governance, and operating models; Security Copilot workflow assessment; security recommendation prioritization; agentic data readiness; AI use-case validation; agent-team design; model comparison and use-case alignment; tokenomics analysis and optimization; agent memory and second-brain design; organization structure versus work-graph analysis |
 
 ## Scorecard Weights
 
@@ -61,12 +74,12 @@ Use `1` for equal weighting unless Cycle 0 approves another value.
 | Checkable Finish Line | 1 |
 | Bounded Sandbox | 1 |
 | Convergent Task | 1 |
-| Loop Visibility | 1 |
+| Loop Visibility | 2 |
 | Lessons-Learned Potential | 1 |
-| Immediate Applicability | 1 |
-| Outcome-Based Architecture Potential | 1 |
+| Immediate Applicability | 2 |
+| Outcome-Based Architecture Potential | 2 |
 | Graph Evolution Potential | 1 |
-| Workshop Fit | 1 |
+| Workshop Fit | 2 |
 
 ## Approved Evidence and Source Materials
 
@@ -86,12 +99,16 @@ Use `1` for equal weighting unless Cycle 0 approves another value.
 
 - Live customer or production actions.
 - Live customer data.
-- To be completed during Cycle 0.
+- Product tutorials or technology demonstrations without an outcome-first feedback loop.
+- Candidates that cannot map to at least one approved audience work type.
+- Candidates whose finish line depends primarily on subjective participant preference or assumed model quality.
+- Category coverage for its own sake; relevance breadth does not compensate for weak loop-engineering instruction.
 
 ## Revisit Policy
 
 - Previously ledgered ideas require `REVISIT: <idea-id>` and a new testable hypothesis.
-- To be completed during Cycle 0.
+- A revisit is allowed only when a changed constraint, new evidence, or materially different loop mechanic creates that named, testable hypothesis.
+- A lower prior rank, a new run, or cosmetic reframing is not sufficient.
 
 ## Interview Record
 
@@ -115,7 +132,13 @@ Use `1` for equal weighting unless Cycle 0 approves another value.
 
 ### Round 3
 
-- Not started.
+- Completed: 2026-08-27.
+- Proposed audience input was challenged as too broad to operate as a priority list or coverage requirement.
+- Decision: rank cross-domain CSA decision loops first and use the categorized work types as relevance evidence rather than a Top 10 quota.
+- Immediate-applicability proxy: a CSA can adapt the loop pattern to at least one listed work type in less than one day using existing Copilot access and safe local inputs.
+- Weighting decision: set Loop Visibility, Immediate Applicability, Outcome-Based Architecture Potential, and Workshop Fit to `2`; keep all other scorecard weights at `1`.
+- Revisit decision: require a named testable hypothesis caused by a changed constraint, new evidence, or materially different loop mechanic.
+- Draft configuration is complete and awaiting explicit approval.
 
 ## Approval Record
 
