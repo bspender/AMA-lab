@@ -55,7 +55,9 @@ For a defensible fresh-context demonstration, create a new GitHub Copilot app co
 
 Because `ama-workshop-context.md` starts as `Status: Draft`, the worker conducts Cycle 0 in rounds. It persists each round, proposes the completed context, and waits for approval.
 
-After approval, start a new conversation with the `ideation` agent and enter `START`.
+To conduct the next Cycle 0 round, enter `START` again in the same conversation. While the context remains `Status: Draft`, `START` continues configuration rather than creating an ideation run. Repeat for up to three interview rounds. A new conversation is optional during Cycle 0 because configuration is a continuous interview and each round is persisted before the next begins.
+
+When the proposed context is complete, explicitly approve it. After the worker persists `Status: Approved`, start a new conversation with the `ideation` agent and enter `START` to create the run and execute Iteration 1. This is the first point where fresh context matters to the demonstration: the execution worker must reconstruct its inputs from approved files rather than the configuration conversation.
 
 ### 2. Inspect
 
