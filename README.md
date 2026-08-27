@@ -16,6 +16,7 @@ The implementation is intentionally representative rather than a replacement for
 | [`loop-orchestrator.md`](loop-orchestrator.md) | Bare control plane: load, configure, resolve, execute one iteration, persist, and stop |
 | [`ideation-goal-card.md`](ideation-goal-card.md) | Declarative objective, output, acceptance policy, scorecard, constraints, and stop caps |
 | [`ama-workshop-context.md`](ama-workshop-context.md) | Approved interview answers and task assumptions |
+| [`ama-workshop-context.baseline.md`](ama-workshop-context.baseline.md) | Untouched pre-interview context for reference or starting another workshop configuration |
 | [`ama-loop-use-case-ledger.md`](ama-loop-use-case-ledger.md) | Cross-run semantic duplicate registry |
 | `ideation-runs\<run-id>.md` | Per-run artifact state, backlog, checks, counters, and decisions |
 
@@ -27,6 +28,10 @@ The boundaries are:
 - **Context:** what assumptions and inputs are approved.
 - **Run file:** what happened and what remains.
 - **Ledger:** which ideas have already been seen.
+
+### Baseline context
+
+`ama-workshop-context.baseline.md` preserves the context's untouched, pre-interview state so another facilitator can see or reuse the original starting point. It is not authoritative workflow state and the `ideation` worker does not read or update it; active Cycle 0 configuration remains in `ama-workshop-context.md`.
 
 ## Why the orchestrator is not an agent
 

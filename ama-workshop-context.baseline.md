@@ -1,4 +1,4 @@
-# AMA Loop-Engineering Workshop Context
+# AMA Loop-Engineering Workshop Context Baseline
 
 Status: Draft
 Context Version: 1
