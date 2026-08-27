@@ -1,11 +1,11 @@
 # AMA Loop-Engineering Workshop Context
 
-Status: Draft
+Status: Approved
 Context Version: 1
 Goal Card: `ideation-goal-card.md`
 Goal Card Version: 0.1
 Task Worker: `ideation`
-Approved On:
+Approved On: 2026-08-27
 
 This file contains interview-derived inputs for the ideation Goal Card. It is configuration, not orchestration and not the Goal Card itself. Complete it during Cycle 0 and set `Status: Approved` only after explicit approval.
 
@@ -66,7 +66,7 @@ Assume a Microsoft Cloud Solution Architect working across Data & AI, Applicatio
 
 ## Scorecard Weights
 
-Use `1` for equal weighting unless Cycle 0 approves another value.
+Use the Cycle 0 approved weights below.
 
 | Dimension | Weight |
 |---|---:|
@@ -142,5 +142,5 @@ Use `1` for equal weighting unless Cycle 0 approves another value.
 
 ## Approval Record
 
-Approved By:
-Approval Note:
+Approved By: User
+Approval Note: Explicitly approved with `APPROVE CONTEXT` on 2026-08-27 after three interview rounds.
