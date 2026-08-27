@@ -1,50 +1,159 @@
 # strategery
 
-Strategery is a Markdown-first Agent OS and agent-system learning repository.
+My day-to-day reasoning partner and constant work in progress.
 
-## Start here for class
+## File-driven loop lab
 
-If you are participating in the live class, start at:
+This repository demonstrates loop engineering in GitHub Copilot CLI and GitHub Copilot app without depending on a `/goal` command.
 
-**[`class\README.md`](class/README.md)**
+The implementation is intentionally representative rather than a replacement for `/goal`. A stateless task worker applies a local Goal Card one iteration at a time, persists state in Markdown, and exposes progress for inspection.
 
-That page tells you what to read first, what to prepare, what to use during the lab, where the exercises live, and where to find troubleshooting help. You do not need to open `specs\` for normal class participation.
+## Architecture
 
-## Class materials
+| File | Responsibility |
+|---|---|
+| [`.github\agents\ideation.agent.md`](.github/agents/ideation.agent.md) | Stateless domain worker: generation, deduplication, gating, scoring, pruning, and Top 3 expansion |
+| [`loop-orchestrator.md`](loop-orchestrator.md) | Bare control plane: load, configure, resolve, execute one iteration, persist, and stop |
+| [`ideation-goal-card.md`](ideation-goal-card.md) | Declarative objective, output, acceptance policy, scorecard, constraints, and stop caps |
+| [`ama-workshop-context.md`](ama-workshop-context.md) | Approved interview answers and task assumptions |
+| [`ama-loop-use-case-ledger.md`](ama-loop-use-case-ledger.md) | Cross-run semantic duplicate registry |
+| `ideation-runs\<run-id>.md` | Per-run artifact state, backlog, checks, counters, and decisions |
 
-- [`class\README.md`](class/README.md) - student landing page and first-read path
-- [`class\prerequisites.md`](class/prerequisites.md) - preparation checklist and environment expectations
-- [`class\participant-guide.md`](class/participant-guide.md) - participant overview, mental model, and output expectations
-- [`class\lab-guide.md`](class/lab-guide.md) - live lab sequence and timing
-- [`class\worksheets.md`](class/worksheets.md) - primary participant workbook
-- [`class\scenario-handout.md`](class/scenario-handout.md) - customer scenario handout
-- [`class\prompts\`](class/prompts/) - copy/paste prompts used by the workbook
-- [`class\exercises.md`](class/exercises.md) - condensed exercise map
-- [`class\references.md`](class/references.md) - core model and key concepts
-- [`class\troubleshooting.md`](class/troubleshooting.md) - fallback and recovery guidance
+The boundaries are:
 
-## Facilitator support
+- **Orchestrator:** how one iteration starts, persists, and stops.
+- **Ideation worker:** how workshop candidates are generated and improved.
+- **Goal Card:** what successful completion means.
+- **Context:** what assumptions and inputs are approved.
+- **Run file:** what happened and what remains.
+- **Ledger:** which ideas have already been seen.
 
-Facilitator support is separated from the student path and is safe to browse in a shared repository:
+## Why the orchestrator is not an agent
 
-- [`facilitator\README.md`](facilitator/README.md)
-- [`facilitator\run-of-show.md`](facilitator/run-of-show.md)
-- [`facilitator\deck-flow.md`](facilitator/deck-flow.md)
-- [`facilitator\environment-fallback.md`](facilitator/environment-fallback.md)
-- [`facilitator\delivery-guidance.md`](facilitator/delivery-guidance.md)
+The orchestrator remains a Markdown protocol for this version. Making it another agent would introduce agent-to-agent coordination, invocation semantics, and another hidden context boundary without improving the core lesson.
 
-Facilitator files may be useful to students who are curious, but they are not the normal participant flow.
+Keeping it visible and declarative lets students inspect the control loop independently from the worker. A future orchestrator agent is justified when automated worker invocation or multi-worker coordination becomes part of the learning objective.
 
-## Provenance and specification history
+## Fresh-context model
 
-The `specs\` folder preserves the clean control surface for source, delivery, and information-architecture provenance. It is useful for maintainers and reviewers, not required for normal class participation.
+The `ideation` agent is instructed to treat files as authoritative and conversation history as non-authoritative. Selecting the agent does not itself guarantee a physically fresh model context.
 
-- [`specs\001-agent-system-lab`](specs/001-agent-system-lab/) - upstream governed source package for the lab concept, scenario, required sequence, and core model.
-- [`specs\002-agent-system-lab-delivery-package`](specs/002-agent-system-lab-delivery-package/) - delivery-rehearsal package and source for mature class/facilitator extraction.
-- [`specs\003-class-sharing-information-architecture`](specs/003-class-sharing-information-architecture/) - class-sharing IA feature that owns this student-first repository shape.
+For a defensible fresh-context demonstration, create a new GitHub Copilot app conversation for each iteration. The new worker conversation receives the run ID and reconstructs state from the repository.
 
-Feature 003 uses copy/adapt-first extraction. The 001 and 002 control surfaces remain preserved as provenance and are not deleted or destructively cleaned up by this class-sharing structure.
+## GitHub Copilot app runbook
 
-## Workbench
+### 1. Configure
 
-Development, planning, review, source, delivery, and validation support artifacts are preserved under [`workbench\`](workbench/). This keeps `specs\` readable while retaining the background material that informed the class package.
+1. Open this repository in the GitHub Copilot app.
+2. Start a new conversation.
+3. Select the repository `ideation` agent.
+4. Enter:
+
+   ```text
+   START
+   ```
+
+Because `ama-workshop-context.md` starts as `Status: Draft`, the worker conducts Cycle 0 in rounds. It persists each round, proposes the completed context, and waits for approval.
+
+After approval, start a new conversation with the `ideation` agent and enter `START`.
+
+### 2. Inspect
+
+The worker executes exactly one iteration, then updates:
+
+- `ideation-runs\<run-id>.md`;
+- `ama-loop-use-case-ledger.md`;
+- the progress console.
+
+Inspect the candidate pool, gate failures, backlog, decision note, and counters.
+
+### 3. Continue with fresh context
+
+Start another new conversation, select `ideation`, and enter:
+
+```text
+CONTINUE run=<run-id>
+```
+
+Repeat with a new conversation for each iteration. The run can use no more than five iterations.
+
+## GitHub Copilot CLI runbook
+
+Use `/agent` to select the repository `ideation` agent, then enter `START`. For a fresh-context demonstration, begin a new conversation before each continuation, select `ideation`, and enter:
+
+```text
+CONTINUE run=<run-id>
+```
+
+The control words are ordinary task instructions, not slash commands.
+
+## Controls
+
+| Intent | Instruction |
+|---|---|
+| Configure or begin Iteration 1 | `START` |
+| Show state without changing it | `STATUS run=<run-id>` |
+| Execute one more iteration | `CONTINUE run=<run-id>` |
+| Reconfigure workshop assumptions | `RECONFIGURE` |
+| Start another ideation run | `NEW RUN` |
+| Resume a named run | `RESUME run=<run-id>` |
+| Reevaluate a prior idea | `REVISIT: <idea-id>` |
+
+## Ideation policy
+
+Iteration 1 registers 20 genuinely novel, ledger-cleared candidates. Later iterations add replacements only when fewer than 15 eligible candidates remain:
+
+`max(5, 15 - eligible candidate count)`
+
+Every iteration evaluates the complete active pool. A run may register no more than 40 novel candidates.
+
+Ideas are identified semantically:
+
+`CSA job | trigger/input | loop transformation | output artifact`
+
+Changing a title does not create a new idea. Duplicates are counted but not persisted as new records. Novel ideas failing foundational gates remain in the ledger so later runs do not rediscover them.
+
+## Result shape
+
+The final artifact contains:
+
+1. A concise ranked comparison of all 10 candidates.
+2. Interview-ready profiles for ranks 1-3.
+3. A recommendation for the best lab candidate.
+
+Each Top 3 profile contains enough information to begin a separate design interview and create a new Goal Card for that lab. Missing decisions remain explicit questions rather than invented assumptions.
+
+## Progress console
+
+Every worker response ends with:
+
+```text
+[AMA LOOP] run=<run-id> | iteration=<n>/5 | generated=+<G> | duplicates=+<D> | novel=+<N> (total=<NT>/40) | gate-rejected=+<R> | eligible=<E> | qualified=<Q>/10 | ledger-total=<L> | status=<status>
+```
+
+The `+` counters report current-iteration activity. `eligible` is the active pool passing foundational gates. `qualified` is progress toward the final 10. `ledger-total` is historical coverage, including rejected ideas.
+
+## Stop behavior
+
+The loop stops when:
+
+- every `DONE WHEN` check passes;
+- five iterations complete;
+- two consecutive iterations show no measurable progress;
+- required state cannot be safely read or written;
+- 10 eligible, nonduplicate ideas cannot be justified; or
+- the 40-candidate discovery cap is exhausted.
+
+Stopping without success is valid. The worker reports unmet checks instead of filling the list with weak or duplicate ideas.
+
+## Future evolution
+
+The local Goal Card can later map to a GitHub Issue:
+
+- issue body: Objective, Output, Context, and Constraints;
+- task list: `DONE WHEN` checks;
+- labels or project fields: stage, status, owner, and risk;
+- comments: iteration decisions and progress;
+- linked artifacts: run state, ledger, and final output.
+
+That evolution replaces the persistence adapter without changing the Goal Card contract.
