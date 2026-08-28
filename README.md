@@ -18,6 +18,7 @@ The implementation is intentionally representative rather than a replacement for
 | [`ama-workshop-context.md`](ama-workshop-context.md) | Approved interview answers and task assumptions |
 | [`ama-workshop-context.baseline.md`](ama-workshop-context.baseline.md) | Untouched pre-interview context for reference or starting another workshop configuration |
 | [`ama-loop-use-case-ledger.md`](ama-loop-use-case-ledger.md) | Cross-run semantic duplicate registry |
+| [`ama-loop-use-case-ledger.baseline.md`](ama-loop-use-case-ledger.baseline.md) | Untouched empty ledger for reference or starting an independent ideation history |
 | `ideation-runs\<run-id>.md` | Per-run artifact state, backlog, checks, counters, and decisions |
 
 The boundaries are:
@@ -29,9 +30,14 @@ The boundaries are:
 - **Run file:** what happened and what remains.
 - **Ledger:** which ideas have already been seen.
 
-### Baseline context
+### Baseline files
 
-`ama-workshop-context.baseline.md` preserves the context's untouched, pre-interview state so another facilitator can see or reuse the original starting point. It is not authoritative workflow state and the `ideation` worker does not read or update it; active Cycle 0 configuration remains in `ama-workshop-context.md`.
+The `.baseline.md` files preserve untouched starting state so another facilitator can see or reuse the lab before configuration and execution add workshop-specific history:
+
+- `ama-workshop-context.baseline.md` contains the pre-interview Cycle 0 context.
+- `ama-loop-use-case-ledger.baseline.md` contains the empty pre-run idea registry.
+
+Baseline files are not authoritative workflow state and the `ideation` worker does not read or update them. Active state remains in `ama-workshop-context.md` and `ama-loop-use-case-ledger.md`.
 
 ## Why the orchestrator is not an agent
 
@@ -45,9 +51,19 @@ The `ideation` agent is instructed to treat files as authoritative and conversat
 
 For a defensible fresh-context demonstration, create a new GitHub Copilot app conversation for each iteration. The new worker conversation receives the run ID and reconstructs state from the repository.
 
+## Lifecycle terminology
+
+- **Configuration (Cycle 0):** the pre-run interview that produces approved workshop context. It can use up to three interview **rounds**.
+- **Round:** one Cycle 0 question-and-answer pass persisted to `ama-workshop-context.md`. Rounds are not execution work and do not count against the run limit.
+- **Run:** one complete attempt to satisfy the Goal Card, beginning after context approval and ending as `Complete` or `Stopped`.
+- **Iteration:** one execution pass within a run: `Observe -> Evaluate -> Decide -> Act -> Persist`. `START` executes Iteration 1; each `CONTINUE` executes at most one additional iteration, up to five.
+- **Candidate stage:** a candidate's maturity (`discovered`, `gated`, `scored`, `stress-tested`, or `final`). Stages are not rounds or iteration numbers.
+
+The worker does not continue automatically. After each iteration it persists state and returns control to the user. The user inspects the evidence and invokes `CONTINUE` only when another iteration is warranted.
+
 ## GitHub Copilot app runbook
 
-### 1. Configure
+### 1. Configure the workshop
 
 1. Open this repository in the GitHub Copilot app.
 2. Start a new conversation.
@@ -62,35 +78,40 @@ Because `ama-workshop-context.md` starts as `Status: Draft`, the worker conducts
 
 To conduct the next Cycle 0 round, enter `START` again in the same conversation. While the context remains `Status: Draft`, `START` continues configuration rather than creating an ideation run. Repeat for up to three interview rounds. A new conversation is optional during Cycle 0 because configuration is a continuous interview and each round is persisted before the next begins.
 
-When the proposed context is complete, explicitly approve it. After the worker persists `Status: Approved`, start a new conversation with the `ideation` agent and enter `START` to create the run and execute Iteration 1. This is the first point where fresh context matters to the demonstration: the execution worker must reconstruct its inputs from approved files rather than the configuration conversation.
+When the proposed context is complete, explicitly approve it.
 
-### 2. Inspect
+### 2. Start the run and execute Iteration 1
 
-The worker executes exactly one iteration, then updates:
+After the worker persists `Status: Approved`, start a new conversation with the `ideation` agent and enter `START` to create the run and execute Iteration 1. This is the first point where fresh context matters to the demonstration: the execution worker must reconstruct its inputs from approved files rather than the configuration conversation.
+
+Iteration 1 builds the initial pool of 20 novel candidates, applies the foundational gates, scores the active pool, and creates a provisional ranking when at least 10 candidates are eligible. The worker then persists:
 
 - `ideation-runs\<run-id>.md`;
 - `ama-loop-use-case-ledger.md`;
 - the progress console.
 
-Inspect the candidate pool, gate failures, backlog, decision note, and counters.
+### 3. Review and continue one iteration at a time
 
-### 3. Continue with fresh context
+Inspect the candidate pool, gate failures, scores, provisional ranking, backlog, decision note, and counters. If the run reports `CONTINUE`, start another new conversation, select `ideation`, and enter:
 
-Start another new conversation, select `ideation`, and enter:
+   ```text
+   CONTINUE run=<run-id>
+   ```
 
-```text
-CONTINUE run=<run-id>
-```
+Each continuation reevaluates and reranks the complete active pool, then addresses the highest-priority unfinished work. Depending on the evidence, that may mean generating replacements, removing weak candidates, completing scores, stress-testing the provisional Top 10, expanding the Top 3, or finalizing the recommendation.
 
-Repeat with a new conversation for each iteration. The run can use no more than five iterations.
+Ranking is progressive rather than a separate pass after candidate generation. The provisional order can change in every iteration as candidates fail gates, receive complete scores, or are compared more rigorously.
+
+Repeat only while the worker reports `CONTINUE`. The run ends early when every `DONE WHEN` check passes, or stops at the first applicable stop condition, including the five-iteration cap.
 
 ## GitHub Copilot CLI runbook
 
-Use `/agent` to select the repository `ideation` agent, then enter `START`. For a fresh-context demonstration, begin a new conversation before each continuation, select `ideation`, and enter:
+Use `/agent` to select the repository `ideation` agent, then follow the same lifecycle:
 
-```text
-CONTINUE run=<run-id>
-```
+1. Enter `START` while context is `Draft` to conduct each Cycle 0 interview round.
+2. Approve the completed context.
+3. Begin a new conversation, select `ideation`, and enter `START` to execute Iteration 1.
+4. Review persisted state and use `CONTINUE run=<run-id>` for one additional iteration at a time.
 
 The control words are ordinary task instructions, not slash commands.
 
