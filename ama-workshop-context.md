@@ -1,11 +1,12 @@
 # AMA Loop-Engineering Workshop Context
 
-Status: Approved
-Context Version: 1
+Status: **Draft - awaiting approval**
+Context Version: 2
 Goal Card: `ideation-goal-card.md`
-Goal Card Version: 0.1
+Goal Card Version: 0.2
 Task Worker: `ideation`
-Approved On: 2026-08-27
+Approved On: pending
+Last Approved Version: 1, approved 2026-08-27 (see Version History)
 
 This file contains interview-derived inputs for the ideation Goal Card. It is configuration, not orchestration and not the Goal Card itself. Complete it during Cycle 0 and set `Status: Approved` only after explicit approval.
 
@@ -32,11 +33,28 @@ This file contains interview-derived inputs for the ideation Goal Card. It is co
 
 - Prefer candidates requiring no starter package so participants build the loop from zero to hero and spend their time on loop engineering rather than learning instructor-provided tools.
 - Allow pre-existing structure when it materially improves the illustration; evaluate this per scenario rather than imposing a universal package.
-- Label instructor preparation effort for any supporting evidence:
-  - `small`: about one hour to create by rapid, AI-assisted authoring;
-  - `medium`: about one day;
-  - `large`: definitely more than one day.
-- Penalize otherwise similar candidates with greater instructor preparation effort.
+- Facilitator preparation effort is a scored dimension, not a tie-break. See Scorecard Weights.
+
+### Facilitator Artifact Inventory
+
+Derive every effort label from this itemized inventory. Do not assert a label.
+
+| # | Inventory item | What to record |
+|---|---|---|
+| 1 | Participant input files | Count and approximate length |
+| 2 | Seeded defects or planted material | Count, and whether each maps to a rule the participant can discover |
+| 3 | Facilitator answer key | Reference converged artifact, defect-to-rule mapping, pass-1 versus pass-N exemplars |
+| 4 | Calibration runs | Number of pilot executions needed to set difficulty so the loop neither collapses in one pass nor fails to converge |
+| 5 | Diagnostic guide | Stuck-versus-slow signals and the hint ladder |
+| 6 | Variant cost | Work to produce one additional cohort or domain variant |
+
+### Derived Effort Labels
+
+- `small` (about one hour): two or fewer input files; no seeded-defect calibration; the answer key is a single reference artifact; no hint ladder needed; variants are text substitutions.
+- `medium` (about one day): any one of - seeded defects requiring calibration; an answer key needing a defect-to-rule mapping; at least one pilot run required to set difficulty.
+- `large` (more than one day): any one of - no unique correct reference solution exists; multiple calibration runs are required; each variant requires re-authoring the answer key.
+
+Artifact page count, input word count, and brief length are **not** valid proxies for preparation effort. Cost concentrates in calibration and the answer key.
 
 ## Sandbox Constraints
 
@@ -66,7 +84,7 @@ Assume a Microsoft Cloud Solution Architect working across Data & AI, Applicatio
 
 ## Scorecard Weights
 
-Use the Cycle 0 approved weights below.
+Use the Cycle 0 approved weights below, as revised in Round 4.
 
 | Dimension | Weight |
 |---|---:|
@@ -74,12 +92,18 @@ Use the Cycle 0 approved weights below.
 | Checkable Finish Line | 1 |
 | Bounded Sandbox | 1 |
 | Convergent Task | 1 |
+| Gaming Resistance | 1 |
 | Loop Visibility | 2 |
 | Lessons-Learned Potential | 1 |
 | Immediate Applicability | 2 |
 | Outcome-Based Architecture Potential | 2 |
 | Graph Evolution Potential | 1 |
 | Workshop Fit | 2 |
+| Facilitator Build Cost | 2 |
+
+Weight sum: **17**. Maximum total: **85**.
+
+Totals scored under Context v1 (weight sum 14, maximum 70) are not comparable and must be recomputed rather than carried forward.
 
 ## Approved Evidence and Source Materials
 
@@ -109,6 +133,7 @@ Use the Cycle 0 approved weights below.
 - Previously ledgered ideas require `REVISIT: <idea-id>` and a new testable hypothesis.
 - A revisit is allowed only when a changed constraint, new evidence, or materially different loop mechanic creates that named, testable hypothesis.
 - A lower prior rank, a new run, or cosmetic reframing is not sufficient.
+- A Goal Card or context version change **is** a qualifying changed constraint, provided the run names the hypothesis the change creates and re-evaluates carried candidates rather than re-discovering them.
 
 ## Interview Record
 
@@ -140,7 +165,35 @@ Use the Cycle 0 approved weights below.
 - Revisit decision: require a named testable hypothesis caused by a changed constraint, new evidence, or materially different loop mechanic.
 - Draft configuration is complete and awaiting explicit approval.
 
+## Post-Run Revision Record
+
+Record instrument changes made after a run completes. A Cycle 0 interview has at most three rounds; post-run revisions are numbered from Round 4 onward and must state the trigger, the diagnosis, each decision, and the accepted consequence.
+
+### Round 4 - Post-Run Instrument Revision
+
+- Trigger: `run-2026-08-27-a` completed with all 14 v0.1 `DONE WHEN` checks passing, then an independent review of the Top 3 under a build-practicality lens reversed the recommendation. The disagreement was traced to the instrument, not to the candidate judgments.
+- Diagnosis: Context v1 could not express facilitator build cost as a ranking force. The Starter Materials clause only asked to penalize *otherwise similar* candidates, which behaves as a tie-break and never moved a rank.
+- Decision 1: promote facilitator build cost to a scored dimension at weight `2`.
+- Decision 2: derive effort labels from an itemized artifact inventory. All three Top 3 briefs had asserted `small`; independent review re-labeled them medium, medium-upper, and large.
+- Decision 3: add Gaming Resistance at weight `1` as a fourth foundational gate. A finish line can be machine-checkable and still satisfiable by a degenerate answer, which terminates the loop early and rewards the exact prompt-and-hope pattern the workshop refutes.
+- Decision 4: require an iteration-forcing mechanism. The prior run treated seeded defect density as deterministic control over pass count; defect density controls work volume per pass, not the number of passes.
+- Decision 5: require a facilitator answer key as a named brief field and a recorded pilot dry run for the recommended candidate.
+- Decision 6: confirm that a Goal Card or context version change qualifies as a changed constraint for revisit, so the carried candidate set can be re-scored rather than re-discovered.
+- Consequence accepted: weight sum moves from 14 to 17 and maximum total from 70 to 85. Prior totals are not comparable and must be recomputed.
+- Draft v2 is complete and awaiting explicit approval.
+
+## Version History
+
+| Version | Status | Weight sum | Max total | Notes |
+|---|---|---:|---:|---|
+| 1 | Approved 2026-08-27, superseded on v2 approval | 14 | 70 | Used by `run-2026-08-27-a`. Weights: CSA Relevance 1, Checkable Finish Line 1, Bounded Sandbox 1, Convergent Task 1, Loop Visibility 2, Lessons-Learned 1, Immediate Applicability 2, Outcome-Based Architecture 2, Graph Evolution 1, Workshop Fit 2. Effort labels asserted by wall-clock estimate. Three foundational gates. |
+| 2 | Draft, awaiting approval | 17 | 85 | Adds Gaming Resistance (1) and Facilitator Build Cost (2). Four foundational gates. Effort labels derived from artifact inventory. |
+
+`run-2026-08-27-a` remains reproducible under Version 1; its recorded scores must not be reinterpreted against Version 2 weights.
+
 ## Approval Record
 
-Approved By: User
-Approval Note: Explicitly approved with `APPROVE CONTEXT` on 2026-08-27 after three interview rounds.
+| Version | Approved By | Note |
+|---|---|---|
+| 1 | User | Explicitly approved with `APPROVE CONTEXT` on 2026-08-27 after three interview rounds. |
+| 2 | pending | Awaiting explicit `APPROVE CONTEXT`. Approving v2 also adopts Goal Card v0.2. |

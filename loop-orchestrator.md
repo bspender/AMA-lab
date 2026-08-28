@@ -20,10 +20,16 @@ The selected task worker executes this protocol. The orchestrator contains no ta
 - `START` - configure if needed; otherwise create a run and execute Iteration 1.
 - `CONTINUE run=<run-id>` - execute exactly one next iteration.
 - `STATUS run=<run-id>` - report persisted state without mutation.
+- `APPROVE CONTEXT` - approve the draft context version, stamping it approved with the date. Required before any run may execute against it.
+- `APPROVE GOAL CARD` - approve a draft Goal Card version independently of context.
 - `RECONFIGURE` - invalidate context and restart configuration.
 - `NEW RUN` - create a run without discarding approved context or cross-run memory.
 - `RESUME run=<run-id>` - resume a named run.
 - Goal Card controls may add task-specific behavior.
+
+Approval is explicit and never inferred. A draft is not approved by discussing it, by agreeing with it in conversation, or by issuing `START`.
+
+When a draft Goal Card declares `Requires Context Version: <n>` and the draft context is that version, `APPROVE CONTEXT` adopts both together; they are one instrument and approving half of it would leave the weights and the acceptance policy out of sync. `APPROVE GOAL CARD` exists for the case where a card is revised against already-approved context.
 
 These are ordinary instructions, not slash commands.
 

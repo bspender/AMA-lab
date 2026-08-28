@@ -78,13 +78,13 @@ Because `ama-workshop-context.md` starts as `Status: Draft`, the worker conducts
 
 To conduct the next Cycle 0 round, enter `START` again in the same conversation. While the context remains `Status: Draft`, `START` continues configuration rather than creating an ideation run. Repeat for up to three interview rounds. A new conversation is optional during Cycle 0 because configuration is a continuous interview and each round is persisted before the next begins.
 
-When the proposed context is complete, explicitly approve it.
+When the proposed context is complete, approve it explicitly by entering `APPROVE CONTEXT`. Approval is never inferred from agreement in conversation. If the draft context requires a draft Goal Card version, this single instruction adopts both.
 
 ### 2. Start the run and execute Iteration 1
 
 After the worker persists `Status: Approved`, start a new conversation with the `ideation` agent and enter `START` to create the run and execute Iteration 1. This is the first point where fresh context matters to the demonstration: the execution worker must reconstruct its inputs from approved files rather than the configuration conversation.
 
-Iteration 1 builds the initial pool of 20 novel candidates, applies the foundational gates, scores the active pool, and creates a provisional ranking when at least 10 candidates are eligible. The worker then persists:
+Iteration 1 builds the initial pool, applies the foundational gates, scores the active pool, and creates a provisional ranking when at least 10 candidates are eligible. In cold-start mode the pool is 20 novel candidates; in revisit mode it is the carried set plus a novel backfill. The worker then persists:
 
 - `ideation-runs\<run-id>.md`;
 - `ama-loop-use-case-ledger.md`;
@@ -109,7 +109,7 @@ Repeat only while the worker reports `CONTINUE`. The run ends early when every `
 Use `/agent` to select the repository `ideation` agent, then follow the same lifecycle:
 
 1. Enter `START` while context is `Draft` to conduct each Cycle 0 interview round.
-2. Approve the completed context.
+2. Approve the completed context with `APPROVE CONTEXT`.
 3. Begin a new conversation, select `ideation`, and enter `START` to execute Iteration 1.
 4. Review persisted state and use `CONTINUE run=<run-id>` for one additional iteration at a time.
 
@@ -120,6 +120,8 @@ The control words are ordinary task instructions, not slash commands.
 | Intent | Instruction |
 |---|---|
 | Configure or begin Iteration 1 | `START` |
+| Approve the draft context (and the Goal Card version it requires) | `APPROVE CONTEXT` |
+| Approve a draft Goal Card against already-approved context | `APPROVE GOAL CARD` |
 | Show state without changing it | `STATUS run=<run-id>` |
 | Execute one more iteration | `CONTINUE run=<run-id>` |
 | Reconfigure workshop assumptions | `RECONFIGURE` |
@@ -129,11 +131,21 @@ The control words are ordinary task instructions, not slash commands.
 
 ## Ideation policy
 
-Iteration 1 registers 20 genuinely novel, ledger-cleared candidates. Later iterations add replacements only when fewer than 15 eligible candidates remain:
+Iteration 1 runs in one of two modes, chosen by reading the ledger.
+
+In **cold-start mode**, when the ledger holds no carried candidates, Iteration 1 registers 20 genuinely novel, ledger-cleared candidates.
+
+In **revisit mode**, when the ledger holds candidates with disposition `carried`, Iteration 1 admits those candidates and re-scores them under the operative card, then generates novel candidates to backfill:
+
+`max(10, 30 - carried candidate count)`
+
+Carried candidates are re-scored, not re-discovered. Prior gate results and weighted totals do not carry forward; only dimension vectors carry, as reference evidence tagged with the card version that produced them.
+
+Later iterations in either mode add replacements only when fewer than 15 eligible candidates remain:
 
 `max(5, 15 - eligible candidate count)`
 
-Every iteration evaluates the complete active pool. A run may register no more than 40 novel candidates.
+Every iteration evaluates the complete active pool. A run may register no more than 40 novel candidates; carried candidates are exempt because they are not novel.
 
 Ideas are identified semantically:
 
@@ -156,10 +168,10 @@ Each Top 3 profile contains enough information to begin a separate design interv
 Every worker response ends with:
 
 ```text
-[AMA LOOP] run=<run-id> | iteration=<n>/5 | generated=+<G> | duplicates=+<D> | novel=+<N> (total=<NT>/40) | gate-rejected=+<R> | eligible=<E> | qualified=<Q>/10 | ledger-total=<L> | status=<status>
+[AMA LOOP] run=<run-id> | mode=<COLD|REVISIT> | iteration=<n>/5 | carried=<C> | generated=+<G> | duplicates=+<D> | novel=+<N> (total=<NT>/40) | gate-rejected=+<R> | eligible=<E> | qualified=<Q>/10 | ledger-total=<L> | status=<status>
 ```
 
-The `+` counters report current-iteration activity. `eligible` is the active pool passing foundational gates. `qualified` is progress toward the final 10. `ledger-total` is historical coverage, including rejected ideas.
+The `+` counters report current-iteration activity. `mode` is fixed at Iteration 1 and does not change mid-run. `carried` is the count of ledger candidates admitted for re-scoring, zero in cold-start mode. `eligible` is the active pool passing foundational gates, carried and novel combined. `qualified` is progress toward the final 10. `ledger-total` is historical coverage, including rejected ideas.
 
 ## Stop behavior
 
