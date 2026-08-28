@@ -1,7 +1,7 @@
 # Goal Card: AMA Loop-Engineering Workshop Use-Case Ideation
 
 Goal Card Version: 0.2
-Status: **Draft - awaiting approval**
+Status: **Approved 2026-08-28**
 Task Worker: `ideation`
 Requires Context Version: 2
 
@@ -231,6 +231,6 @@ Deltas 1, 4, and 5 would each independently have changed the v0.1 outcome.
 | Version | Status | Weight sum / Max | Gates | DONE WHEN | Brief fields | Notes |
 |---|---|---|---:|---:|---:|---|
 | 0.1 | Superseded | 14 / 70 | 3 | 14 | 20 | Weights: CSA 1, Checkable 1, Sandbox 1, Convergent 1, Loop Visibility 2, Lessons 1, Immediate Applicability 2, Own-Brain Amplification 2, Graph Extensibility 1, Workshop Fit 2. Gates: Checkable, Sandbox, Convergent, each >= 3. Used by `run-2026-08-27-01` and `run-2026-08-27-a`. |
-| 0.2 | Draft | 17 / 85 | 4 | 18 | 23 | Adds Gaming Resistance (weight 1, fourth gate) and Facilitator Build Cost (weight 2, inverted so 5 is cheapest). See Change Record. |
+| 0.2 | Approved 2026-08-28 | 17 / 85 | 4 | 18 | 23 | Adds Gaming Resistance (weight 1, fourth gate) and Facilitator Build Cost (weight 2, inverted so 5 is cheapest). See Change Record. |
 
 Prior versions are recoverable from git history. This file is the operative card at every version; the version is stamped in the header, not the filename, so that changes remain diffable.

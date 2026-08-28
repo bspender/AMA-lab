@@ -1,12 +1,12 @@
 # AMA Loop-Engineering Workshop Context
 
-Status: **Draft - awaiting approval**
+Status: **Approved**
 Context Version: 2
 Goal Card: `ideation-goal-card.md`
 Goal Card Version: 0.2
 Task Worker: `ideation`
-Approved On: pending
-Last Approved Version: 1, approved 2026-08-27 (see Version History)
+Approved On: 2026-08-28
+Last Approved Version: 2, approved 2026-08-28 (see Version History)
 
 This file contains interview-derived inputs for the ideation Goal Card. It is configuration, not orchestration and not the Goal Card itself. Complete it during Cycle 0 and set `Status: Approved` only after explicit approval.
 
@@ -186,8 +186,8 @@ Record instrument changes made after a run completes. A Cycle 0 interview has at
 
 | Version | Status | Weight sum | Max total | Notes |
 |---|---|---:|---:|---|
-| 1 | Approved 2026-08-27, superseded on v2 approval | 14 | 70 | Used by `run-2026-08-27-a`. Weights: CSA Relevance 1, Checkable Finish Line 1, Bounded Sandbox 1, Convergent Task 1, Loop Visibility 2, Lessons-Learned 1, Immediate Applicability 2, Outcome-Based Architecture 2, Graph Evolution 1, Workshop Fit 2. Effort labels asserted by wall-clock estimate. Three foundational gates. |
-| 2 | Draft, awaiting approval | 17 | 85 | Adds Gaming Resistance (1) and Facilitator Build Cost (2). Four foundational gates. Effort labels derived from artifact inventory. |
+| 1 | Approved 2026-08-27, superseded 2026-08-28 | 14 | 70 | Used by `run-2026-08-27-a`. Weights: CSA Relevance 1, Checkable Finish Line 1, Bounded Sandbox 1, Convergent Task 1, Loop Visibility 2, Lessons-Learned 1, Immediate Applicability 2, Outcome-Based Architecture 2, Graph Evolution 1, Workshop Fit 2. Effort labels asserted by wall-clock estimate. Three foundational gates. |
+| 2 | Approved 2026-08-28 | 17 | 85 | Adds Gaming Resistance (1) and Facilitator Build Cost (2). Four foundational gates. Effort labels derived from artifact inventory. |
 
 `run-2026-08-27-a` remains reproducible under Version 1; its recorded scores must not be reinterpreted against Version 2 weights.
 
@@ -196,4 +196,4 @@ Record instrument changes made after a run completes. A Cycle 0 interview has at
 | Version | Approved By | Note |
 |---|---|---|
 | 1 | User | Explicitly approved with `APPROVE CONTEXT` on 2026-08-27 after three interview rounds. |
-| 2 | pending | Awaiting explicit `APPROVE CONTEXT`. Approving v2 also adopts Goal Card v0.2. |
+| 2 | User | Explicitly approved with `APPROVE CONTEXT` on 2026-08-28; approval also adopts Goal Card v0.2. |
