@@ -1,5 +1,5 @@
 ---
-name: ideation
+name: Lab Ideation
 description: Stateless task worker for file-backed AMA ideation iterations and terminal-run idea expansion.
 user-invocable: true
 disable-model-invocation: false
