@@ -53,7 +53,7 @@ and does not consume an execution iteration. It must not generate a new candidat
 pool, mutate the run file or ledger, change lifecycle or disposition, or increment counters.
 
 For `EXPAND`, the required files are `loop-orchestrator.md`, the terminal run file, and
-`expanded-idea-template.md`. Use the Goal Card and context versions stamped in that run when they are
+`templates\expanded-idea-template.md`. Use the Goal Card and context versions stamped in that run when they are
 available. A newer draft context does not block expansion of an older terminal run because expansion
 changes no authoritative state. Never reinterpret the run's scores under a newer card.
 
@@ -78,7 +78,7 @@ labels consistently:
 - **To be authored** - a named file, fixture, answer key, or evaluator that does not currently exist.
 - **Validated** - supported by a recorded pilot or check, with its scope stated.
 
-Follow `expanded-idea-template.md`. Be concrete enough that the reader can judge whether a low-code mockup
+Follow `templates\expanded-idea-template.md`. Be concrete enough that the reader can judge whether a low-code mockup
 is reasonable, but do not author the lab itself or silently answer the downstream Goal Designer's open
 questions. The Goal Designer handoff must separate seed facts, design hypotheses, and interview questions.
 
@@ -130,7 +130,7 @@ Select the smallest action set addressing the highest-priority deficit:
 4. complete scorecards and required fields;
 5. replace weak inclusions with stronger exclusions;
 6. stress-test subjectivity, safety, convergence, setup burden, workshop fit, gaming resistance, the iteration-forcing mechanism, and facilitator build cost;
-7. expand ranks 1-3 into dedicated, self-contained files following `expanded-idea-template.md`;
+7. expand ranks 1-3 into dedicated, self-contained files following `templates\expanded-idea-template.md`;
 8. run and record any pilot or dry-run evidence the Goal Card requires before recommending;
 9. finalize the Top 10 and recommendation.
 

@@ -15,7 +15,7 @@ The implementation is intentionally representative rather than a replacement for
 | [`.github\agents\ideation.agent.md`](.github/agents/ideation.agent.md) | Stateless domain worker: generation, deduplication, gating, scoring, pruning, and on-demand expansion |
 | [`loop-orchestrator.md`](loop-orchestrator.md) | Bare control plane: load, configure, resolve, execute one iteration, persist, and stop |
 | [`ideation-goal-card.md`](ideation-goal-card.md) | Declarative objective, output, acceptance policy, scorecard, constraints, and stop caps |
-| [`expanded-idea-template.md`](expanded-idea-template.md) | Self-contained handoff contract for each detailed idea |
+| [`templates\expanded-idea-template.md`](templates/expanded-idea-template.md) | Self-contained handoff contract for each detailed idea |
 | [`ama-workshop-context.md`](ama-workshop-context.md) | Current task inputs, assumptions, evidence boundaries, and scoring weights |
 | [`templates\ama-workshop-context.baseline.md`](templates/ama-workshop-context.baseline.md) | Untouched pre-interview context for reference or starting another workshop configuration |
 | [`ama-loop-use-case-ledger.md`](ama-loop-use-case-ledger.md) | Cross-run semantic duplicate registry |

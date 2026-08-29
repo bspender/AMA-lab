@@ -13,7 +13,7 @@ derived design handoff, not proof that the proposed lab kit exists.
 | Final rank | `<rank>` |
 | Stable ID | `<candidate-id>` |
 | Candidate maturity | `<final or terminal-run state>` |
-| Expansion contract | `expanded-idea-template.md`, version 1 |
+| Expansion contract | `templates\expanded-idea-template.md`, version 1 |
 | Expansion status | `Design hypothesis; not an approved Goal Card or completed lab kit` |
 | Output path | `ideation-runs\<run-id>\expanded-idea-<rank>.md` |
 

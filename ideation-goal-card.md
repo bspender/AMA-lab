@@ -5,11 +5,6 @@ Status: **Draft**
 Task Worker: `ideation`
 Requires Context Version: 3
 
-> This draft preserves v0.2's ranking instrument and changes the expansion contract. A completed v0.2 run
-> named fictional role cards, fixture decks, immutable outcomes, and starter files as if the reader already
-> knew what they were or where to find them. v0.3 makes every detailed idea a self-contained, attachable
-> Goal Designer handoff and distinguishes run evidence from proposed or missing lab materials.
-
 ## OBJECTIVE
 
 Identify and rank exactly 10 distinct workshop use cases most likely to teach loop engineering to Emerging Technology Cloud Solution Architects within a 90-minute Azure Master Architect program for senior Microsoft CSAs.
@@ -47,9 +42,8 @@ Write each Top 3 expansion to:
 
 `ideation-runs\<run-id>\expanded-idea-<rank>.md`
 
-Each file follows `expanded-idea-template.md` and is independently understandable without the run file.
-It preserves the substantive v0.2 brief fields while reorganizing them around the downstream Goal Designer
-interview:
+Each file follows `templates\expanded-idea-template.md` and is independently understandable without the run
+file. The template organizes each expansion around the downstream Goal Designer interview:
 
 1. plain-language idea and reader orientation;
 2. evidence-status legend and provenance;
@@ -64,7 +58,7 @@ interview:
 10. preliminary "should this loop?" assessment against a checkable finish line, bounded sandbox, and
     convergent task;
 11. remaining interview questions rather than invented decisions;
-12. original scorecard, nearest alternative, lessons, architecture potential, graph path, and first-run
+12. scorecard, nearest alternative, lessons, architecture potential, graph path, and first-run
     risks.
 
 Any input not verified at a repository path must be labeled **To be authored**, not described as though it
@@ -154,7 +148,7 @@ Use only:
 - this Goal Card;
 - `ama-loop-use-case-ledger.md`;
 - the current run file;
-- `expanded-idea-template.md`;
+- `templates\expanded-idea-template.md`;
 - source materials explicitly approved in context.
 
 Do not require external research unless approved context permits it.
@@ -214,7 +208,7 @@ Stopping without success is valid. Report unmet checks instead of filling gaps w
 | Approved context | `ama-workshop-context.md` |
 | Cross-run idea ledger | `ama-loop-use-case-ledger.md` |
 | Per-run state | `ideation-runs\<run-id>.md` |
-| Expansion contract | `expanded-idea-template.md` |
+| Expansion contract | `templates\expanded-idea-template.md` |
 | Derived expanded ideas | `ideation-runs\<run-id>\expanded-idea-<rank>.md` |
 
 Ledger states are:
@@ -228,34 +222,12 @@ Ledger states are:
 
 ## Change Record
 
-### v0.3
-
-The scoring instrument is unchanged from v0.2. The output contract now requires dedicated expanded files,
-explicit evidence status for assumptions and starter artifacts, a minimum-mockup versus workshop-ready
-comparison, and an attachable Goal Designer handoff. The task worker also accepts terminal-run
-`EXPAND idea <rank-or-id>` requests without consuming an iteration or changing authoritative state.
-
-### v0.2
-
-Maximum total score changes from **70** to **85**. Weight sum changes from 14 to 17. Scores from runs using v0.1 are not comparable to v0.2 totals and must be recomputed, not carried.
-
-| # | Delta | Evidence from `run-2026-08-27-a` |
-|---|---|---|
-| 1 | Added **Facilitator Build Cost** dimension, weight 2 | The run's own recommendation reversed under a build lens. v0.1 could not express this: approved context only asks to penalize *otherwise similar* candidates, which is a tie-break nudge and never moved a rank. |
-| 2 | Build-cost label must be derived from an itemized artifact inventory | All three Top 3 briefs asserted `small`. Independent review re-labeled them medium, medium-upper, and large. A label no one can check is not a check. |
-| 3 | Added brief field 21, facilitator reference solution and diagnostic guide | All 20 v0.1 fields omit the answer key. It is the single largest uncounted cost and the reason rank 3 is genuinely `large`. |
-| 4 | Added **Gaming Resistance** as a scored dimension and fourth foundational gate | v0.1 gates on "machine-checkable," which a vacuous answer can satisfy. Read-only rules prevent editing the evaluator, not satisfying it mechanically. |
-| 5 | Added iteration-forcing mechanism as brief field 23 and a `DONE WHEN` check | The v0.1 run argued that seeded defect density gave deterministic control over pass count. It does not: defect density controls work items per pass, not the number of passes. v0.1 had no field where that error could surface. |
-| 6 | Added a recorded pilot dry run for the recommended candidate | v0.1 permitted recommending a lab that had never been executed once, so calibration risk stayed invisible until after selection. |
-
-Deltas 1, 4, and 5 would each independently have changed the v0.1 outcome.
+When this Goal Card changes, record the version, operative contract delta, and reason. Keep run-specific
+evidence in the applicable run file rather than here.
 
 ## Version History
 
 | Version | Status | Weight sum / Max | Gates | DONE WHEN | Brief fields | Notes |
 |---|---|---|---:|---:|---:|---|
-| 0.1 | Superseded | 14 / 70 | 3 | 14 | 20 | Weights: CSA 1, Checkable 1, Sandbox 1, Convergent 1, Loop Visibility 2, Lessons 1, Immediate Applicability 2, Own-Brain Amplification 2, Graph Extensibility 1, Workshop Fit 2. Gates: Checkable, Sandbox, Convergent, each >= 3. Used by `run-2026-08-27-01` and `run-2026-08-27-a`. |
-| 0.2 | Approved 2026-08-28 | 17 / 85 | 4 | 18 | 23 | Adds Gaming Resistance (weight 1, fourth gate) and Facilitator Build Cost (weight 2, inverted so 5 is cheapest). See Change Record. |
-| 0.3 | Draft | 17 / 85 | 4 | 22 | Template-based | Preserves scoring and gates; moves expansions to dedicated self-contained files, exposes artifact existence and assumptions, adds Goal Designer handoff, and supports post-run ad hoc expansion. |
 
-Prior versions are recoverable from git history. This file is the operative card at every version; the version is stamped in the header, not the filename, so that changes remain diffable.
+Add one row when a version is approved or superseded. Prior versions remain recoverable from git history.
