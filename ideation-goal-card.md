@@ -1,7 +1,7 @@
 # Goal Card: AMA Loop-Engineering Workshop Use-Case Ideation
 
 Goal Card Version: 0.3
-Status: **Draft**
+Status: **Approved**
 Task Worker: `ideation`
 Requires Context Version: 3
 
@@ -229,5 +229,6 @@ evidence in the applicable run file rather than here.
 
 | Version | Status | Weight sum / Max | Gates | DONE WHEN | Brief fields | Notes |
 |---|---|---|---:|---:|---:|---|
+| 0.3 | Approved 2026-08-29 | 17 / 85 | 4 | 25 | 12 | Adopted with Context Version 3. |
 
 Add one row when a version is approved or superseded. Prior versions remain recoverable from git history.

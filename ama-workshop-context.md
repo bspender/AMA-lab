@@ -1,11 +1,11 @@
 # AMA Loop-Engineering Workshop Context
 
-Status: **Draft**
+Status: **Approved**
 Context Version: 3
 Goal Card: `ideation-goal-card.md`
 Goal Card Version: 0.3
 Task Worker: `ideation`
-Approved On: Pending
+Approved On: 2026-08-29
 
 This file contains current inputs for the ideation Goal Card. It is configuration, not orchestration, run
 history, or the Goal Card itself. Complete it during Cycle 0 and set `Status: Approved` only after explicit

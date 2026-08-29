@@ -23,6 +23,27 @@ The implementation is intentionally representative rather than a replacement for
 | `ideation-runs\<run-id>.md` | Per-run artifact state, backlog, checks, counters, and decisions |
 | `ideation-runs\<run-id>\expanded-idea-<rank>.md` | One attachable, Goal Designer-ready expansion |
 
+## Reusable continuous-run contracts
+
+The workshop harness above intentionally returns after one iteration so learners can inspect state. The
+separate use-case contract runs a bounded loop continuously within one invocation:
+
+| File | Responsibility |
+|---|---|
+| [`use-case-loop-orchestrator.md`](use-case-loop-orchestrator.md) | Generalized `START` and `STATUS` lifecycle that persists and immediately continues until complete, stopped, or externally interrupted |
+| [`templates\use-case-context.baseline.md`](templates/use-case-context.baseline.md) | Optional runtime configuration aligned to the eight Goal Card fields |
+| [`templates\use-case-run.baseline.md`](templates/use-case-run.baseline.md) | Generalized resumable run-file schema |
+
+Start a use case with:
+
+```text
+START goal=<goal-card-path> [context=<context-path>] [run=<run-file-path>]
+```
+
+The optional context file can identify run-specific repositories, source windows, priorities, parameter
+values, and tighter constraints. Its absence does not block execution. The Goal Card remains authoritative
+for stages, acceptance, and stop-caps.
+
 The boundaries are:
 
 - **Orchestrator:** how one iteration starts, persists, and stops.
