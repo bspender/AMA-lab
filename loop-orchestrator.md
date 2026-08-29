@@ -25,6 +25,8 @@ The selected task worker executes this protocol. The orchestrator contains no ta
 - `RECONFIGURE` - invalidate context and restart configuration.
 - `NEW RUN` - create a run without discarding approved context or cross-run memory.
 - `RESUME run=<run-id>` - resume a named run.
+- `EXPAND idea <rank-or-id> [run=<run-id>]` - after a run is terminal, create one task-worker-specific
+  expansion without consuming an iteration or mutating run state.
 - Goal Card controls may add task-specific behavior.
 
 Approval is explicit and never inferred. A draft is not approved by discussing it, by agreeing with it in conversation, or by issuing `START`.
@@ -140,3 +142,6 @@ For a completed or stopped run:
 4. End with the task worker's progress line.
 
 For `STATUS`, do not consume an iteration or estimate new counters.
+
+For `EXPAND`, do not consume an iteration or mutate authoritative run state. The task worker owns the
+derived-artifact contract and must repeat persisted counters rather than estimate new ones.

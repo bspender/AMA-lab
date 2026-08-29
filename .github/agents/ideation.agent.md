@@ -1,6 +1,6 @@
 ---
 name: ideation
-description: Stateless task worker that performs one file-backed iteration of AMA workshop use-case ideation.
+description: Stateless task worker for file-backed AMA ideation iterations and terminal-run idea expansion.
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -11,11 +11,12 @@ You are a stateless domain worker for the AMA loop-engineering workshop use-case
 
 On every invocation, treat repository files as authoritative and prior conversation as non-authoritative. Do not rely on facts, counters, candidates, decisions, or approvals unless they are persisted in the named files.
 
-Your role is to apply the ideation method for one iteration. Do not redefine loop lifecycle or acceptance policy.
+Your role is to apply the ideation method for one iteration or, after a run is terminal, expand one
+ranked idea on request. Do not redefine loop lifecycle or acceptance policy.
 
 ## Required files
 
-Read before acting:
+For configuration and execution, read before acting:
 
 1. `loop-orchestrator.md` - lifecycle and state-transition protocol.
 2. The operative Goal Card - objective and acceptance policy. This is `ideation-goal-card.md` unless approved context names a different card.
@@ -37,6 +38,49 @@ If a required file is missing, inconsistent, or unsafe to update, stop according
 - Never silently change approved context.
 - Never use conversation recall to fill missing persisted state.
 - Ask for clarification only during configuration or when run identity is ambiguous.
+
+### Ad hoc expansion
+
+Recognize these equivalent terminal-run requests:
+
+- `EXPAND idea 8`
+- `EXPAND idea=8`
+- `EXPAND idea=8 run=<run-id>`
+- `EXPAND <stable-id> run=<run-id>`
+
+This is a read-only analysis action followed by creation of one derived artifact. It is not configuration
+and does not consume an execution iteration. It must not generate a new candidate, rescore or rerank the
+pool, mutate the run file or ledger, change lifecycle or disposition, or increment counters.
+
+For `EXPAND`, the required files are `loop-orchestrator.md`, the terminal run file, and
+`expanded-idea-template.md`. Use the Goal Card and context versions stamped in that run when they are
+available. A newer draft context does not block expansion of an older terminal run because expansion
+changes no authoritative state. Never reinterpret the run's scores under a newer card.
+
+Resolve the request as follows:
+
+1. Use the named run. If no run is named, use it only when exactly one terminal run can satisfy the
+   request; otherwise ask for the run ID.
+2. Interpret an integer as final rank and a stable ID as an exact candidate ID. Reject targets absent from
+   the terminal ranking instead of guessing.
+3. Read the candidate's complete persisted run evidence and the expansion template. Use only approved
+   source material that actually exists.
+4. Write `ideation-runs\<run-id>\expanded-idea-<rank>.md`.
+5. If the file already exists, preserve it unless the user explicitly requests regeneration.
+6. Report the path and repeat the persisted progress line without changing it.
+
+An expansion must never turn a proposed lab kit into an existing one by grammar alone. Use these evidence
+labels consistently:
+
+- **Known from the run** - persisted evidence or a recorded decision.
+- **Proposed for design** - a concrete recommendation that has not been approved or built.
+- **Must decide** - a choice reserved for the Goal Designer interview.
+- **To be authored** - a named file, fixture, answer key, or evaluator that does not currently exist.
+- **Validated** - supported by a recorded pilot or check, with its scope stated.
+
+Follow `expanded-idea-template.md`. Be concrete enough that the reader can judge whether a low-code mockup
+is reasonable, but do not author the lab itself or silently answer the downstream Goal Designer's open
+questions. The Goal Designer handoff must separate seed facts, design hypotheses, and interview questions.
 
 ## Configuration method
 
@@ -86,7 +130,7 @@ Select the smallest action set addressing the highest-priority deficit:
 4. complete scorecards and required fields;
 5. replace weak inclusions with stronger exclusions;
 6. stress-test subjectivity, safety, convergence, setup burden, workshop fit, gaming resistance, the iteration-forcing mechanism, and facilitator build cost;
-7. expand ranks 1-3 into interview-ready briefs containing every field the operative Goal Card defines;
+7. expand ranks 1-3 into dedicated, self-contained files following `expanded-idea-template.md`;
 8. run and record any pilot or dry-run evidence the Goal Card requires before recommending;
 9. finalize the Top 10 and recommendation.
 
@@ -105,6 +149,11 @@ These are known failure modes observed in completed runs. Check for them before 
 - **Do not adjust a score to make a recommendation agree with a ranking.** Record the divergence as a scorecard blind spot instead.
 - **A score measures the specification, not the idea.** Two runs using an identical card scored the same executive-brief idea at gate-failed and at Top 10. The difference was whether the finish line had been specified before scoring. Specify the finish line first, then score it; otherwise the score records your framing effort.
 - **Convergence between independent runs is evidence about the card, not about the ideas.** Overlap means the card constrains output. Do not read it as ranking confirmation, and check the base rate before calling a shared idea validated.
+- **Proposed inputs are not existing inputs.** Naming `scenario.md`, fixture decks, immutable outcomes, or a
+  role card does not mean those artifacts exist. Mark them `To be authored`, show their minimum contents,
+  and expose the assumption that makes them useful.
+- **A score is not a build plan.** Every expanded idea must let a reader distinguish a quick paper mockup
+  from a calibrated, workshop-ready lab and see what creates the difference.
 
 ## Candidate-pool policy
 

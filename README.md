@@ -12,14 +12,16 @@ The implementation is intentionally representative rather than a replacement for
 
 | File | Responsibility |
 |---|---|
-| [`.github\agents\ideation.agent.md`](.github/agents/ideation.agent.md) | Stateless domain worker: generation, deduplication, gating, scoring, pruning, and Top 3 expansion |
+| [`.github\agents\ideation.agent.md`](.github/agents/ideation.agent.md) | Stateless domain worker: generation, deduplication, gating, scoring, pruning, and on-demand expansion |
 | [`loop-orchestrator.md`](loop-orchestrator.md) | Bare control plane: load, configure, resolve, execute one iteration, persist, and stop |
 | [`ideation-goal-card.md`](ideation-goal-card.md) | Declarative objective, output, acceptance policy, scorecard, constraints, and stop caps |
-| [`ama-workshop-context.md`](ama-workshop-context.md) | Approved interview answers and task assumptions |
-| [`ama-workshop-context.baseline.md`](ama-workshop-context.baseline.md) | Untouched pre-interview context for reference or starting another workshop configuration |
+| [`expanded-idea-template.md`](expanded-idea-template.md) | Self-contained handoff contract for each detailed idea |
+| [`ama-workshop-context.md`](ama-workshop-context.md) | Current task inputs, assumptions, evidence boundaries, and scoring weights |
+| [`templates\ama-workshop-context.baseline.md`](templates/ama-workshop-context.baseline.md) | Untouched pre-interview context for reference or starting another workshop configuration |
 | [`ama-loop-use-case-ledger.md`](ama-loop-use-case-ledger.md) | Cross-run semantic duplicate registry |
-| [`ama-loop-use-case-ledger.baseline.md`](ama-loop-use-case-ledger.baseline.md) | Untouched empty ledger for reference or starting an independent ideation history |
+| [`templates\ama-loop-use-case-ledger.baseline.md`](templates/ama-loop-use-case-ledger.baseline.md) | Untouched empty ledger for reference or starting an independent ideation history |
 | `ideation-runs\<run-id>.md` | Per-run artifact state, backlog, checks, counters, and decisions |
+| `ideation-runs\<run-id>\expanded-idea-<rank>.md` | One attachable, Goal Designer-ready expansion |
 
 The boundaries are:
 
@@ -30,12 +32,28 @@ The boundaries are:
 - **Run file:** what happened and what remains.
 - **Ledger:** which ideas have already been seen.
 
+### Harness design principles
+
+The harness keeps reusable policy in the worker, Goal Card, template, and README rather than accumulating
+run history in the active context:
+
+- A mechanical finish line must also reject cheap degenerate answers; checkable does not mean
+  gaming-resistant.
+- Staged information release controls pass count. More defects or checklist items increase work volume but
+  do not force another iteration.
+- Facilitator effort is derived from starter inputs, planted material, answer-key complexity, calibration,
+  diagnostics, and variant cost; page count is not a useful proxy.
+- Expanded ideas must distinguish known or validated evidence from proposed choices, unresolved decisions,
+  and artifacts still to be authored.
+- The active context describes only the current configuration. Interview transcripts, instrument-change
+  narratives, version histories, and run results belong outside it.
+
 ### Baseline files
 
 The `.baseline.md` files preserve untouched starting state so another facilitator can see or reuse the lab before configuration and execution add workshop-specific history:
 
-- `ama-workshop-context.baseline.md` contains the pre-interview Cycle 0 context.
-- `ama-loop-use-case-ledger.baseline.md` contains the empty pre-run idea registry.
+- `templates\ama-workshop-context.baseline.md` contains the pre-interview Cycle 0 context.
+- `templates\ama-loop-use-case-ledger.baseline.md` contains the empty pre-run idea registry.
 
 Baseline files are not authoritative workflow state and the `ideation` worker does not read or update them. Active state remains in `ama-workshop-context.md` and `ama-loop-use-case-ledger.md`.
 
@@ -128,6 +146,7 @@ The control words are ordinary task instructions, not slash commands.
 | Start another ideation run | `NEW RUN` |
 | Resume a named run | `RESUME run=<run-id>` |
 | Reevaluate a prior idea | `REVISIT: <idea-id>` |
+| Expand a final ranked idea | `EXPAND idea <rank-or-id> [run=<run-id>]` |
 
 ## Ideation policy
 
@@ -158,10 +177,24 @@ Changing a title does not create a new idea. Duplicates are counted but not pers
 The final artifact contains:
 
 1. A concise ranked comparison of all 10 candidates.
-2. Interview-ready profiles for ranks 1-3.
+2. Dedicated, self-contained profiles for ranks 1-3 under
+   `ideation-runs\<run-id>\expanded-idea-<rank>.md`.
 3. A recommendation for the best lab candidate.
 
-Each Top 3 profile contains enough information to begin a separate design interview and create a new Goal Card for that lab. Missing decisions remain explicit questions rather than invented assumptions.
+Each expanded profile is designed to be attached directly to the Goal Designer prompt. It says what the
+idea means in plain language, distinguishes persisted evidence from proposed starter materials, shows the
+minimum credible mockup and the workshop-ready build delta, and supplies candidate Goal Card inputs without
+pretending they are approved decisions. Missing artifacts are marked `To be authored`; missing decisions
+remain explicit interview questions.
+
+After a run completes, any final rank can be expanded without rerunning ideation:
+
+```text
+EXPAND idea 8 run=<run-id>
+```
+
+The action creates one derived file, consumes no iteration, and does not alter the ranking, ledger, or run
+counters. If only one terminal run is available, `run=<run-id>` may be omitted.
 
 ## Progress console
 

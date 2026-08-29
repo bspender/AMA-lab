@@ -1,15 +1,14 @@
 # Goal Card: AMA Loop-Engineering Workshop Use-Case Ideation
 
-Goal Card Version: 0.2
-Status: **Approved 2026-08-28**
+Goal Card Version: 0.3
+Status: **Draft**
 Task Worker: `ideation`
-Requires Context Version: 2
+Requires Context Version: 3
 
-> This version exists because `run-2026-08-27-a` completed all v0.1 `DONE WHEN` checks and still produced a
-> recommendation that reversed under a build-practicality lens. That is an instrument gap, not a judgment
-> error: v0.1 contains no dimension capable of moving a rank on facilitator build cost, no gate that
-> distinguishes a machine-checkable finish line from a vacuously satisfiable one, and no requirement that a
-> candidate name what forces a second pass. See "Change Record" for the six deltas and their evidence.
+> This draft preserves v0.2's ranking instrument and changes the expansion contract. A completed v0.2 run
+> named fictional role cards, fixture decks, immutable outcomes, and starter files as if the reader already
+> knew what they were or where to find them. v0.3 makes every detailed idea a self-contained, attachable
+> Goal Designer handoff and distinguishes run evidence from proposed or missing lab materials.
 
 ## OBJECTIVE
 
@@ -24,7 +23,7 @@ Provide a concise comparison of all 10 and expand the Top 3 into interview-ready
 Produce:
 
 1. A concise ranked Top 10 comparison.
-2. Three expanded lab-candidate briefs for ranks 1-3.
+2. Three dedicated expanded lab-candidate files for ranks 1-3.
 3. An updated cross-run idea ledger.
 4. A completed, resumable run file.
 
@@ -42,33 +41,34 @@ Include one row per candidate with:
 - total score;
 - one-sentence comparative justification.
 
-### Top 3 interview-ready briefs
+### Expanded idea files
 
-For each of the Top 3 include:
+Write each Top 3 expansion to:
 
-1. Why a senior Emerging Technology CSA would care.
-2. Proposed participant artifact.
-3. Draft Goal Card objective.
-4. Three to five boring, checkable `DONE WHEN` criteria.
-5. Named bounded sandbox.
-6. Why repeated passes converge.
-7. What students visibly observe changing between iterations.
-8. Likely quality rules.
-9. Required source inputs and context.
-10. Constraints and exclusions.
-11. Suggested stages and stop caps.
-12. Example improvement backlog.
-13. Lessons-learned and memory potential.
-14. Outcome-based architecture potential.
-15. Graph-evolution path, or why it should remain a single-agent loop.
-16. Full 12-dimension scorecard and total.
-17. Nearest alternative and comparative justification.
-18. Assumptions requiring validation.
-19. Remaining design-interview questions for creating that lab's Goal Card.
-20. First-run risks and what to watch.
-21. **Facilitator reference solution and diagnostic guide** - the answer key: worked converged artifact, defect-to-rule mapping, pass-1 versus pass-N exemplars, stuck-versus-slow diagnostics, and the hint ladder.
-22. **Facilitator artifact inventory and derived build-cost label** - the itemized inventory required by approved context, with the label derived from it rather than asserted.
-23. **Iteration-forcing mechanism** - what makes a second and third pass necessary, and why it controls pass count rather than work volume.
+`ideation-runs\<run-id>\expanded-idea-<rank>.md`
+
+Each file follows `expanded-idea-template.md` and is independently understandable without the run file.
+It preserves the substantive v0.2 brief fields while reorganizing them around the downstream Goal Designer
+interview:
+
+1. plain-language idea and reader orientation;
+2. evidence-status legend and provenance;
+3. concrete participant journey and visible loop;
+4. assumptions and design choices, including why each was introduced;
+5. proposed starter kit with existence status, minimum contents, and authoring burden;
+6. minimum credible mockup versus workshop-ready build;
+7. candidate evaluator, convergence measure, gaming attacks, and iteration-forcing mechanism;
+8. facilitator reference solution, diagnostics, inventory, and derived build-cost label;
+9. complete Goal Designer handoff covering candidate Objective, Output, Done When, Quality, Context,
+   Constraints, Stages, and Stop-Caps;
+10. preliminary "should this loop?" assessment against a checkable finish line, bounded sandbox, and
+    convergent task;
+11. remaining interview questions rather than invented decisions;
+12. original scorecard, nearest alternative, lessons, architecture potential, graph path, and first-run
+    risks.
+
+Any input not verified at a repository path must be labeled **To be authored**, not described as though it
+already exists. Any unapproved choice must be labeled **Proposed for design** or **Must decide**.
 
 After the profiles, choose one recommended lab candidate and justify the choice.
 
@@ -81,7 +81,13 @@ After the profiles, choose one recommended lab candidate and justify the choice.
 - Every final candidate has all 12 scorecard values as integers from 1 to 5.
 - Every weighted total is calculated correctly.
 - The Top 10 comparison contains every required field.
-- Ranks 1-3 each contain all 23 interview-ready brief fields.
+- Ranks 1-3 each have a dedicated file at the required path and contain every template section.
+- Every expanded file is independently understandable without reading the run file.
+- Every named input and facilitator artifact has an existence status; no missing artifact is phrased as
+  available.
+- Every expanded file separates the minimum credible mockup from the calibrated workshop-ready build.
+- Every expanded file contains an attachable Goal Designer handoff with all eight Goal Card fields clearly
+  marked as candidate inputs rather than approved decisions.
 - Each Top 3 brief identifies unresolved questions rather than inventing context.
 - Each Top 3 candidate is compared with its nearest alternative.
 - **Every final candidate names an iteration-forcing mechanism, and that mechanism is shown to control pass count rather than work volume.**
@@ -108,6 +114,12 @@ After the profiles, choose one recommended lab candidate and justify the choice.
 - Label assumptions rather than inventing evidence.
 - Use comparative justification instead of generic praise.
 - Keep ranks 4-10 concise; reserve detailed analysis for ranks 1-3.
+- Write expansions for a reader who has not seen the run. Define fictional domains, roles, fixtures,
+  thresholds, and stage mechanics before using them.
+- Explain why each proposed input exists and whether it must be authored; specificity without provenance is
+  a hidden assumption, not useful context.
+- Keep the Goal Designer handoff compact enough to attach as context, while placing rationale and build
+  detail in the surrounding sections.
 
 ### Scorecard
 
@@ -142,6 +154,7 @@ Use only:
 - this Goal Card;
 - `ama-loop-use-case-ledger.md`;
 - the current run file;
+- `expanded-idea-template.md`;
 - source materials explicitly approved in context.
 
 Do not require external research unless approved context permits it.
@@ -201,6 +214,8 @@ Stopping without success is valid. Report unmet checks instead of filling gaps w
 | Approved context | `ama-workshop-context.md` |
 | Cross-run idea ledger | `ama-loop-use-case-ledger.md` |
 | Per-run state | `ideation-runs\<run-id>.md` |
+| Expansion contract | `expanded-idea-template.md` |
+| Derived expanded ideas | `ideation-runs\<run-id>\expanded-idea-<rank>.md` |
 
 Ledger states are:
 
@@ -212,6 +227,15 @@ Ledger states are:
 - `revisit-eligible`
 
 ## Change Record
+
+### v0.3
+
+The scoring instrument is unchanged from v0.2. The output contract now requires dedicated expanded files,
+explicit evidence status for assumptions and starter artifacts, a minimum-mockup versus workshop-ready
+comparison, and an attachable Goal Designer handoff. The task worker also accepts terminal-run
+`EXPAND idea <rank-or-id>` requests without consuming an iteration or changing authoritative state.
+
+### v0.2
 
 Maximum total score changes from **70** to **85**. Weight sum changes from 14 to 17. Scores from runs using v0.1 are not comparable to v0.2 totals and must be recomputed, not carried.
 
@@ -232,5 +256,6 @@ Deltas 1, 4, and 5 would each independently have changed the v0.1 outcome.
 |---|---|---|---:|---:|---:|---|
 | 0.1 | Superseded | 14 / 70 | 3 | 14 | 20 | Weights: CSA 1, Checkable 1, Sandbox 1, Convergent 1, Loop Visibility 2, Lessons 1, Immediate Applicability 2, Own-Brain Amplification 2, Graph Extensibility 1, Workshop Fit 2. Gates: Checkable, Sandbox, Convergent, each >= 3. Used by `run-2026-08-27-01` and `run-2026-08-27-a`. |
 | 0.2 | Approved 2026-08-28 | 17 / 85 | 4 | 18 | 23 | Adds Gaming Resistance (weight 1, fourth gate) and Facilitator Build Cost (weight 2, inverted so 5 is cheapest). See Change Record. |
+| 0.3 | Draft | 17 / 85 | 4 | 22 | Template-based | Preserves scoring and gates; moves expansions to dedicated self-contained files, exposes artifact existence and assumptions, adds Goal Designer handoff, and supports post-run ad hoc expansion. |
 
 Prior versions are recoverable from git history. This file is the operative card at every version; the version is stamped in the header, not the filename, so that changes remain diffable.
