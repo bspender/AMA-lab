@@ -1,253 +1,199 @@
-# strategery
+# AMA Loop Engineering Lab
 
-My day-to-day reasoning partner and constant work in progress.
+A small, file-driven lab for designing and running bounded AI work loops.
 
-## File-driven loop lab
+The repository separates two concerns:
 
-This repository demonstrates loop engineering in GitHub Copilot CLI and GitHub Copilot app without depending on a `/goal` command.
+1. **Goal design** turns a recurring task into a checkable, bounded Goal Card.
+2. **Loop execution** uses that Goal Card to plan, act, check, adjust, and persist until the work is complete or a stop condition applies.
 
-The implementation is intentionally representative rather than a replacement for `/goal`. A stateless task worker applies a local Goal Card one iteration at a time, persists state in Markdown, and exposes progress for inspection.
+Everything important is represented in Markdown so the task definition, state, evidence, and decisions remain inspectable outside any single AI conversation.
 
-## Architecture
+## Repository map
 
-| File | Responsibility |
+| Path | Purpose |
 |---|---|
-| [`.github\agents\ideation.agent.md`](.github/agents/ideation.agent.md) | Stateless domain worker: generation, deduplication, gating, scoring, pruning, and on-demand expansion |
-| [`loop-orchestrator.md`](loop-orchestrator.md) | Bare control plane: load, configure, resolve, execute one iteration, persist, and stop |
-| [`ideation-goal-card.md`](ideation-goal-card.md) | Declarative objective, output, acceptance policy, scorecard, constraints, and stop caps |
-| [`templates\expanded-idea-template.md`](templates/expanded-idea-template.md) | Self-contained handoff contract for each detailed idea |
-| [`ama-workshop-context.md`](ama-workshop-context.md) | Current task inputs, assumptions, evidence boundaries, and scoring weights |
-| [`templates\ama-workshop-context.baseline.md`](templates/ama-workshop-context.baseline.md) | Untouched pre-interview context for reference or starting another workshop configuration |
-| [`ama-loop-use-case-ledger.md`](ama-loop-use-case-ledger.md) | Cross-run semantic duplicate registry |
-| [`templates\ama-loop-use-case-ledger.baseline.md`](templates/ama-loop-use-case-ledger.baseline.md) | Untouched empty ledger for reference or starting an independent ideation history |
-| `ideation-runs\<run-id>.md` | Per-run artifact state, backlog, checks, counters, and decisions |
-| `ideation-runs\<run-id>\expanded-idea-<rank>.md` | One attachable, Goal Designer-ready expansion |
+| [`goal-designer-prompt.md`](goal-designer-prompt.md) | Interview protocol for deciding whether a task deserves a loop and producing an eight-field Goal Card |
+| [`loop-orchestrator.md`](loop-orchestrator.md) | Domain-neutral control contract for a continuous, bounded, file-backed run |
+| [`templates\use-case-context.baseline.md`](templates/use-case-context.baseline.md) | Optional per-run context for approved sources, runtime parameters, priorities, and tighter constraints |
+| [`brainstem\lobster-pound-review-goal-card.md`](brainstem/lobster-pound-review-goal-card.md) | Worked Goal Card for a recurring community-insights task |
 
-## Reusable continuous-run contracts
+## Core model
 
-The workshop harness above intentionally returns after one iteration so learners can inspect state. The
-separate use-case contract runs a bounded loop continuously within one invocation:
+```text
+Goal Designer -> Goal Card -> Loop Orchestrator -> Run state + task artifacts
+```
 
-| File | Responsibility |
+### Goal Card: what success means
+
+Every Goal Card defines eight fields:
+
+1. `OBJECTIVE`
+2. `OUTPUT`
+3. `DONE WHEN`
+4. `QUALITY`
+5. `CONTEXT`
+6. `CONSTRAINTS`
+7. `STAGES`
+8. `STOP-CAPS`
+
+The card is authoritative for task scope, acceptance, quality, and stopping behavior.
+
+### Orchestrator: how work proceeds
+
+The orchestrator applies this cycle:
+
+```text
+Load -> Observe -> Plan -> Act -> Check -> Adjust -> Persist -> Transition
+```
+
+`START` authorizes the agent to continue through all necessary cycles in the same invocation. A cycle does not pause for approval unless the Goal Card requires escalation, a stop-cap applies, or the environment interrupts execution.
+
+### Runtime context: what varies by run
+
+Runtime context is optional. It can supply:
+
+- concrete source locations and time windows;
+- parameter values explicitly left open by the Goal Card;
+- current priorities;
+- repository or path selections;
+- additional restrictions; and
+- tighter stop-caps.
+
+It cannot weaken, replace, or reinterpret the Goal Card.
+
+### Run file: what happened
+
+The run file is the resumable system of record. It contains:
+
+- Goal Card and context fingerprints;
+- current stage and cycle;
+- acceptance-check results and evidence;
+- ordered backlog;
+- progress measures;
+- artifact paths;
+- one decision note per completed cycle; and
+- completion, stop, or interruption state.
+
+Conversation history is non-authoritative. Another agent should be able to resume from the files alone.
+
+## What makes a task loopable?
+
+The Goal Designer tests three ingredients:
+
+| Ingredient | Requirement |
 |---|---|
-| [`use-case-loop-orchestrator.md`](use-case-loop-orchestrator.md) | Generalized `START` and `STATUS` lifecycle that persists and immediately continues until complete, stopped, or externally interrupted |
-| [`templates\use-case-context.baseline.md`](templates/use-case-context.baseline.md) | Optional runtime configuration aligned to the eight Goal Card fields |
-| [`templates\use-case-run.baseline.md`](templates/use-case-run.baseline.md) | Generalized resumable run-file schema |
+| Checkable finish line | Every completion criterion has a judgment-free pass/fail test |
+| Bounded sandbox | Read sources, write locations, exclusions, and prohibited actions are explicit |
+| Convergent task | A failed check identifies a bounded repair that can be performed and rechecked |
 
-Start a use case with:
+The outcome may be:
+
+- **Loop it** when all three ingredients are present.
+- **Don't loop this** when the task is better expressed as one prompt.
+- **One-shot as described, loopable if upgraded** when a missing verification dimension could create convergence.
+
+One-cycle completion is valid. The purpose of the loop is verified completion, not manufacturing extra passes.
+
+## Quick start
+
+### 1. Design a Goal Card
+
+Open [`goal-designer-prompt.md`](goal-designer-prompt.md) in an AI assistant and use it as the instruction. The Goal Designer conducts up to three interview rounds, challenges vague or judgment-laden criteria, and returns either a Goal Card or a reason not to loop the task.
+
+Save an approved card as Markdown. The [`brainstem`](brainstem) directory contains the current worked example.
+
+### 2. Add runtime context only when needed
+
+Copy [`templates\use-case-context.baseline.md`](templates/use-case-context.baseline.md), fill only the applicable fields, and set:
+
+```text
+Status: Active
+```
+
+Omit the context file when the Goal Card already contains every required source and parameter.
+
+### 3. Start the loop
+
+In a repository-aware AI session, instruct the agent to follow [`loop-orchestrator.md`](loop-orchestrator.md), then enter:
 
 ```text
 START goal=<goal-card-path> [context=<context-path>] [run=<run-file-path>]
 ```
 
-The optional context file can identify run-specific repositories, source windows, priorities, parameter
-values, and tighter constraints. Its absence does not block execution. The Goal Card remains authoritative
-for stages, acceptance, and stop-caps.
-
-The boundaries are:
-
-- **Orchestrator:** how one iteration starts, persists, and stops.
-- **Ideation worker:** how workshop candidates are generated and improved.
-- **Goal Card:** what successful completion means.
-- **Context:** what assumptions and inputs are approved.
-- **Run file:** what happened and what remains.
-- **Ledger:** which ideas have already been seen.
-
-### Harness design principles
-
-The harness keeps reusable policy in the worker, Goal Card, template, and README rather than accumulating
-run history in the active context:
-
-- A mechanical finish line must also reject cheap degenerate answers; checkable does not mean
-  gaming-resistant.
-- Staged information release controls pass count. More defects or checklist items increase work volume but
-  do not force another iteration.
-- Facilitator effort is derived from starter inputs, planted material, answer-key complexity, calibration,
-  diagnostics, and variant cost; page count is not a useful proxy.
-- Expanded ideas must distinguish known or validated evidence from proposed choices, unresolved decisions,
-  and artifacts still to be authored.
-- The active context describes only the current configuration. Interview transcripts, instrument-change
-  narratives, version histories, and run results belong outside it.
-
-### Baseline files
-
-The `.baseline.md` files preserve untouched starting state so another facilitator can see or reuse the lab before configuration and execution add workshop-specific history:
-
-- `templates\ama-workshop-context.baseline.md` contains the pre-interview Cycle 0 context.
-- `templates\ama-loop-use-case-ledger.baseline.md` contains the empty pre-run idea registry.
-
-Baseline files are not authoritative workflow state and the `ideation` worker does not read or update them. Active state remains in `ama-workshop-context.md` and `ama-loop-use-case-ledger.md`.
-
-## Why the orchestrator is not an agent
-
-The orchestrator remains a Markdown protocol for this version. Making it another agent would introduce agent-to-agent coordination, invocation semantics, and another hidden context boundary without improving the core lesson.
-
-Keeping it visible and declarative lets students inspect the control loop independently from the worker. A future orchestrator agent is justified when automated worker invocation or multi-worker coordination becomes part of the learning objective.
-
-## Fresh-context model
-
-The `ideation` agent is instructed to treat files as authoritative and conversation history as non-authoritative. Selecting the agent does not itself guarantee a physically fresh model context.
-
-For a defensible fresh-context demonstration, create a new GitHub Copilot app conversation for each iteration. The new worker conversation receives the run ID and reconstructs state from the repository.
-
-## Lifecycle terminology
-
-- **Configuration (Cycle 0):** the pre-run interview that produces approved workshop context. It can use up to three interview **rounds**.
-- **Round:** one Cycle 0 question-and-answer pass persisted to `ama-workshop-context.md`. Rounds are not execution work and do not count against the run limit.
-- **Run:** one complete attempt to satisfy the Goal Card, beginning after context approval and ending as `Complete` or `Stopped`.
-- **Iteration:** one execution pass within a run: `Observe -> Evaluate -> Decide -> Act -> Persist`. `START` executes Iteration 1; each `CONTINUE` executes at most one additional iteration, up to five.
-- **Candidate stage:** a candidate's maturity (`discovered`, `gated`, `scored`, `stress-tested`, or `final`). Stages are not rounds or iteration numbers.
-
-The worker does not continue automatically. After each iteration it persists state and returns control to the user. The user inspects the evidence and invokes `CONTINUE` only when another iteration is warranted.
-
-## GitHub Copilot app runbook
-
-### 1. Configure the workshop
-
-1. Open this repository in the GitHub Copilot app.
-2. Start a new conversation.
-3. Select the repository `ideation` agent.
-4. Enter:
-
-   ```text
-   START
-   ```
-
-Because `ama-workshop-context.md` starts as `Status: Draft`, the worker conducts Cycle 0 in rounds. It persists each round, proposes the completed context, and waits for approval.
-
-To conduct the next Cycle 0 round, enter `START` again in the same conversation. While the context remains `Status: Draft`, `START` continues configuration rather than creating an ideation run. Repeat for up to three interview rounds. A new conversation is optional during Cycle 0 because configuration is a continuous interview and each round is persisted before the next begins.
-
-When the proposed context is complete, approve it explicitly by entering `APPROVE CONTEXT`. Approval is never inferred from agreement in conversation. If the draft context requires a draft Goal Card version, this single instruction adopts both.
-
-### 2. Start the run and execute Iteration 1
-
-After the worker persists `Status: Approved`, start a new conversation with the `ideation` agent and enter `START` to create the run and execute Iteration 1. This is the first point where fresh context matters to the demonstration: the execution worker must reconstruct its inputs from approved files rather than the configuration conversation.
-
-Iteration 1 builds the initial pool, applies the foundational gates, scores the active pool, and creates a provisional ranking when at least 10 candidates are eligible. In cold-start mode the pool is 20 novel candidates; in revisit mode it is the carried set plus a novel backfill. The worker then persists:
-
-- `ideation-runs\<run-id>.md`;
-- `ama-loop-use-case-ledger.md`;
-- the progress console.
-
-### 3. Review and continue one iteration at a time
-
-Inspect the candidate pool, gate failures, scores, provisional ranking, backlog, decision note, and counters. If the run reports `CONTINUE`, start another new conversation, select `ideation`, and enter:
-
-   ```text
-   CONTINUE run=<run-id>
-   ```
-
-Each continuation reevaluates and reranks the complete active pool, then addresses the highest-priority unfinished work. Depending on the evidence, that may mean generating replacements, removing weak candidates, completing scores, stress-testing the provisional Top 10, expanding the Top 3, or finalizing the recommendation.
-
-Ranking is progressive rather than a separate pass after candidate generation. The provisional order can change in every iteration as candidates fail gates, receive complete scores, or are compared more rigorously.
-
-Repeat only while the worker reports `CONTINUE`. The run ends early when every `DONE WHEN` check passes, or stops at the first applicable stop condition, including the five-iteration cap.
-
-## GitHub Copilot CLI runbook
-
-Use `/agent` to select the repository `ideation` agent, then follow the same lifecycle:
-
-1. Enter `START` while context is `Draft` to conduct each Cycle 0 interview round.
-2. Approve the completed context with `APPROVE CONTEXT`.
-3. Begin a new conversation, select `ideation`, and enter `START` to execute Iteration 1.
-4. Review persisted state and use `CONTINUE run=<run-id>` for one additional iteration at a time.
-
-The control words are ordinary task instructions, not slash commands.
-
-## Controls
-
-| Intent | Instruction |
-|---|---|
-| Configure or begin Iteration 1 | `START` |
-| Approve the draft context (and the Goal Card version it requires) | `APPROVE CONTEXT` |
-| Approve a draft Goal Card against already-approved context | `APPROVE GOAL CARD` |
-| Show state without changing it | `STATUS run=<run-id>` |
-| Execute one more iteration | `CONTINUE run=<run-id>` |
-| Reconfigure workshop assumptions | `RECONFIGURE` |
-| Start another ideation run | `NEW RUN` |
-| Resume a named run | `RESUME run=<run-id>` |
-| Reevaluate a prior idea | `REVISIT: <idea-id>` |
-| Expand a final ranked idea | `EXPAND idea <rank-or-id> [run=<run-id>]` |
-
-## Ideation policy
-
-Iteration 1 runs in one of two modes, chosen by reading the ledger.
-
-In **cold-start mode**, when the ledger holds no carried candidates, Iteration 1 registers 20 genuinely novel, ledger-cleared candidates.
-
-In **revisit mode**, when the ledger holds candidates with disposition `carried`, Iteration 1 admits those candidates and re-scores them under the operative card, then generates novel candidates to backfill:
-
-`max(10, 30 - carried candidate count)`
-
-Carried candidates are re-scored, not re-discovered. Prior gate results and weighted totals do not carry forward; only dimension vectors carry, as reference evidence tagged with the card version that produced them.
-
-Later iterations in either mode add replacements only when fewer than 15 eligible candidates remain:
-
-`max(5, 15 - eligible candidate count)`
-
-Every iteration evaluates the complete active pool. A run may register no more than 40 novel candidates; carried candidates are exempt because they are not novel.
-
-Ideas are identified semantically:
-
-`CSA job | trigger/input | loop transformation | output artifact`
-
-Changing a title does not create a new idea. Duplicates are counted but not persisted as new records. Novel ideas failing foundational gates remain in the ledger so later runs do not rediscover them.
-
-## Result shape
-
-The final artifact contains:
-
-1. A concise ranked comparison of all 10 candidates.
-2. Dedicated, self-contained profiles for ranks 1-3 under
-   `ideation-runs\<run-id>\expanded-idea-<rank>.md`.
-3. A recommendation for the best lab candidate.
-
-Each expanded profile is designed to be attached directly to the Goal Designer prompt. It says what the
-idea means in plain language, distinguishes persisted evidence from proposed starter materials, shows the
-minimum credible mockup and the workshop-ready build delta, and supplies candidate Goal Card inputs without
-pretending they are approved decisions. Missing artifacts are marked `To be authored`; missing decisions
-remain explicit interview questions.
-
-After a run completes, any final rank can be expanded without rerunning ideation:
+For example:
 
 ```text
-EXPAND idea 8 run=<run-id>
+START goal=brainstem\lobster-pound-review-goal-card.md
 ```
 
-The action creates one derived file, consumes no iteration, and does not alter the ranking, ledger, or run
-counters. If only one terminal run is available, `run=<run-id>` may be omitted.
-
-## Progress console
-
-Every worker response ends with:
-
-```text
-[AMA LOOP] run=<run-id> | mode=<COLD|REVISIT> | iteration=<n>/5 | carried=<C> | generated=+<G> | duplicates=+<D> | novel=+<N> (total=<NT>/40) | gate-rejected=+<R> | eligible=<E> | qualified=<Q>/10 | ledger-total=<L> | status=<status>
-```
-
-The `+` counters report current-iteration activity. `mode` is fixed at Iteration 1 and does not change mid-run. `carried` is the count of ledger candidates admitted for re-scoring, zero in cold-start mode. `eligible` is the active pool passing foundational gates, carried and novel combined. `qualified` is progress toward the final 10. `ledger-total` is historical coverage, including rejected ideas.
-
-## Stop behavior
-
-The loop stops when:
+The orchestrator creates or resumes a run, validates that the task is loopable, and continues until:
 
 - every `DONE WHEN` check passes;
-- five iterations complete;
-- two consecutive iterations show no measurable progress;
-- required state cannot be safely read or written;
-- 10 eligible, nonduplicate ideas cannot be justified; or
-- the 40-candidate discovery cap is exhausted.
+- a Goal Card stop-cap applies; or
+- the execution environment forces an interruption.
 
-Stopping without success is valid. The worker reports unmet checks instead of filling the list with weak or duplicate ideas.
+When `run` is omitted, the default location is:
 
-## Future evolution
+```text
+<goal-directory>\runs\<goal-stem>\<run-id>.md
+```
 
-The local Goal Card can later map to a GitHub Issue:
+### 4. Inspect persisted status
 
-- issue body: Objective, Output, Context, and Constraints;
-- task list: `DONE WHEN` checks;
-- labels or project fields: stage, status, owner, and risk;
-- comments: iteration decisions and progress;
-- linked artifacts: run state, ledger, and final output.
+Read state without performing work:
 
-That evolution replaces the persistence adapter without changing the Goal Card contract.
+```text
+STATUS [run=<run-file-path>]
+```
+
+`START` and `STATUS` are ordinary instructions, not slash commands.
+
+## Resume and interruption behavior
+
+If an environment limit interrupts execution, the agent persists completed work, leaves the run `In Progress`, records the interruption reason, and reports the exact `START` instruction needed to resume.
+
+On resume, the agent reloads the Goal Card, optional context, run file, artifacts, and required inputs. If the Goal Card changed during the run, the orchestrator stops rather than mixing acceptance policies.
+
+## Progress and stopping
+
+Progress must be a persisted, checkable state change, such as:
+
+- a failed check passing;
+- measurable distance to a threshold decreasing;
+- a required artifact appearing;
+- a stage exit condition passing; or
+- a blocking backlog item being resolved.
+
+More prose, tool calls, or cycles do not count as progress.
+
+Successful completion requires every `DONE WHEN` check to pass. Reaching a fixed point with failed checks is a stall, not success. A stopped run is a valid and useful result when it reports the failed checks, supporting evidence, and smallest next action.
+
+## Worked example: community insights
+
+[`brainstem\lobster-pound-review-goal-card.md`](brainstem/lobster-pound-review-goal-card.md) models a recurring 30-day synthesis of a Teams community. It demonstrates:
+
+- complete source accounting within an approved sandbox;
+- reusable daily evidence condensation;
+- weekly theme evolution rather than disconnected summaries;
+- original-source citations;
+- duplicate, freshness, contradiction, and continuity checks;
+- incremental reuse with a trailing reinspection window; and
+- explicit privacy, access, and publication boundaries.
+
+The example is a task contract, not bundled data or a simulated integration. Running it requires an execution environment with authorized access to the sources named by the card. The repository does not contain Teams messages, transcripts, credentials, or copied source bodies.
+
+## Design principles
+
+- Files, not chat history, hold authoritative state.
+- Goal Cards define acceptance; context only configures a run.
+- Mechanical checks must reject cheap, superficially compliant answers.
+- Discovery-dependent checks belong only in tasks that genuinely require retrieval or verification.
+- Expensive operations use total-run budgets rather than artificial per-cycle rationing.
+- Failed checks should produce repairable backlog items.
+- Durable artifacts should be reused across recurring runs when their source checkpoints remain valid.
+- Safety, access boundaries, and escalation authority remain explicit.
+
+## Scope
+
+This is an experimental lab for reasoning about autonomous task loops. It is not a workflow engine, scheduler, Teams connector, or replacement for platform-native orchestration. Its value is the visible contract: the task, evidence, progress, and stopping logic can all be inspected and revised directly.
