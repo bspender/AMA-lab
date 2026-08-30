@@ -1,147 +1,245 @@
-# File-Driven Loop Orchestrator
+# Continuous Use-Case Loop Orchestrator
 
-This file defines the control plane for a visible, bounded, file-backed loop. It is a teaching approximation of goal-driven behavior for GitHub Copilot CLI and GitHub Copilot app, not a `/goal` implementation.
+This file defines a reusable control contract for one bounded, file-backed autonomous run. It is independent
+of any domain, use case, Goal Card, or task worker.
 
-The selected task worker executes this protocol. The orchestrator contains no task-specific generation, scoring, pruning, or artifact-building method.
+`START` authorizes the executing agent to run all remaining cycles in the same invocation. Completing a cycle
+is not a reason to return control to the user. The agent persists state and immediately starts the next cycle
+until the Goal Card is satisfied, a stop-cap applies, or the execution environment forces an interruption.
 
 ## Responsibilities
 
 | Component | Owns |
 |---|---|
-| Orchestrator | Invocation lifecycle, state transitions, iteration boundary, persistence requirement, and stopping |
-| Task worker | Domain-specific method performed during one iteration |
-| Goal Card | Objective, output, acceptance policy, constraints, and stop caps |
-| Context | Approved task inputs and assumptions |
-| Run file | Authoritative state for one run |
-| Cross-run memory | Durable knowledge shared across runs |
+| Orchestrator | Run resolution, cycle mechanics, persistence, transition rules, and response shape |
+| Goal Card | Objective, output, acceptance checks, quality rules, input contract, constraints, stages, and stop-caps |
+| Runtime context | Optional per-run values, priorities, steering, sources, and tighter limits |
+| Run file | Authoritative state, evidence, checks, backlog, metrics, and cycle decisions |
+| Executing agent | Domain work needed to move the artifact toward the Goal Card |
 
-## User controls
+The Goal Card is authoritative. Runtime context may parameterize choices the Goal Card leaves open, add
+constraints, prioritize work, or tighten stop-caps. It must not weaken or replace the Goal Card.
 
-- `START` - configure if needed; otherwise create a run and execute Iteration 1.
-- `CONTINUE run=<run-id>` - execute exactly one next iteration.
-- `STATUS run=<run-id>` - report persisted state without mutation.
-- `APPROVE CONTEXT` - approve the draft context version, stamping it approved with the date. Required before any run may execute against it.
-- `APPROVE GOAL CARD` - approve a draft Goal Card version independently of context.
-- `RECONFIGURE` - invalidate context and restart configuration.
-- `NEW RUN` - create a run without discarding approved context or cross-run memory.
-- `RESUME run=<run-id>` - resume a named run.
-- `EXPAND idea <rank-or-id> [run=<run-id>]` - after a run is terminal, create one task-worker-specific
-  expansion without consuming an iteration or mutating run state.
-- Goal Card controls may add task-specific behavior.
+## Controls
 
-Approval is explicit and never inferred. A draft is not approved by discussing it, by agreeing with it in conversation, or by issuing `START`.
+Only these controls are part of this contract:
 
-When a draft Goal Card declares `Requires Context Version: <n>` and the draft context is that version, `APPROVE CONTEXT` adopts both together; they are one instrument and approving half of it would leave the weights and the acceptance policy out of sync. `APPROVE GOAL CARD` exists for the case where a card is revised against already-approved context.
+- `START goal=<goal-card-path> [context=<context-path>] [run=<run-file-path>]`
+- `STATUS [run=<run-file-path>]`
+
+`START` creates or resumes one run and continues cycling without waiting between cycles. When `run` is
+omitted, resume the single non-terminal run for the named Goal Card; create a new run when none exists. If
+multiple non-terminal runs match, stop before mutation and report the candidate paths.
+
+`STATUS` reads persisted state without performing work, rechecking acceptance, changing counters, or
+modifying files.
 
 These are ordinary instructions, not slash commands.
 
-## Invariants
+## Inputs and precedence
 
-1. The Goal Card defines success.
-2. The task worker defines how domain work is performed.
-3. Files, not conversation history, are authoritative.
-4. Configuration does not consume an iteration.
-5. `START` or `CONTINUE` executes at most one iteration.
-6. State is persisted before every workflow response.
-7. A new iteration never begins in the same invocation.
-8. The worker ends every response with its task-specific progress line.
+### Goal Card
 
-## Invocation protocol
+The Goal Card is required and must contain all eight named fields:
 
-### 1. Load
+1. `OBJECTIVE`
+2. `OUTPUT`
+3. `DONE WHEN`
+4. `QUALITY`
+5. `CONTEXT`
+6. `CONSTRAINTS`
+7. `STAGES`
+8. `STOP-CAPS`
 
-The task worker reads:
+The Goal Card defines the stages. The orchestrator must not insert generic drafting, review, or approval
+stages into the run.
 
-- this orchestrator;
-- its Goal Card;
-- approved context;
-- cross-run memory;
-- the named run file, when continuing or resuming.
+### Optional runtime context
 
-If required state is unavailable, conflicting, or unsafe to update, stop without consuming an iteration.
+The `runtime context` file is optional. `templates\use-case-context.baseline.md` defines the recommended structure.
 
-### 2. Configure when required
+- If no `runtime context` path is supplied, or the supplied path does not exist, continue with neutral runtime
+  context and record `Runtime-Context: none` in the run file.
+- Missing optional `runtime context` is never a configuration or approval gate.
+- Reload the `runtime context` file at the start of every cycle so deliberate runtime steering can affect the next
+  decision.
+- Record the observed runtime context version or content fingerprint in each cycle log entry.
+- If the `runtime context` conflicts with the Goal Card, follow the Goal Card and record the ignored conflict.
+- If the `runtime context` points outside the Goal Card's sandbox, do not use that source.
 
-Configuration is required when context is missing, not approved, explicitly invalidated, or materially conflicts with the request.
+A missing optional `runtime context` file is different from a missing input required by the Goal Card. Required task
+inputs remain subject to the Goal Card's checks and stop-caps.
 
-The task worker:
+Precedence is:
 
-1. applies its task-specific interview method;
-2. persists one interview round per invocation;
-3. proposes context with `Status: Draft`;
-4. waits for explicit approval;
-5. marks approved context with its version and approval date;
-6. waits for `START`.
+1. safety and platform restrictions;
+2. Goal Card;
+3. optional runtime context;
+4. prior run decisions;
+5. agent defaults.
 
-### 3. Resolve the run
+## Preflight
 
-- Create a run for `START` or `NEW RUN` when no applicable run exists.
-- Load the named run for `CONTINUE` or `RESUME`.
-- Ask for a run ID if more than one in-progress run is possible.
-- Validate Goal Card and context versions.
-- Restore the artifact, backlog, metrics, check results, iteration count, and stall count.
+Before Cycle 1, validate the run as a loop:
 
-Run resolution does not consume an iteration.
+| Test | Passing condition |
+|---|---|
+| Checkable finish line | Every `DONE WHEN` item has a mechanical pass/fail test |
+| Bounded sandbox | Allowed inputs, write locations, and prohibited actions are explicit |
+| Convergent task | A failed check or stage condition can produce a smaller actionable backlog |
+| Bounded execution | `STOP-CAPS` defines a hard cycle cap and a no-progress stall cap |
 
-### 4. Execute one iteration
+If any test fails, do not execute the task as a loop. Create or update the run file as `Stopped`, identify the
+failed preflight test, and respond with `don't loop this` plus the best single-prompt formulation supported by
+the Goal Card.
 
-The task worker performs exactly one:
+Resolve all runtime parameters before work begins. A runtime context value may fill a variable or choice
+explicitly left open by the Goal Card. It may not create a new acceptance policy.
 
-`Observe -> Evaluate -> Decide -> Act -> Persist`
+## Run resolution
 
-The worker applies its domain method while respecting the Goal Card. It must:
+The default run path is:
 
-- evaluate checkable evidence;
-- select the smallest action set addressing the highest-priority failure;
-- work only inside the approved sandbox;
-- update the artifact and backlog;
-- recheck affected acceptance criteria;
-- persist a decision note and progress metrics.
+`<goal-directory>\runs\<goal-stem>\<run-id>.md`
 
-### 5. Decide the transition
+Use a stable run ID such as `YYYYMMDD-HHMMSS-<short-slug>`. Create the parent directories when needed.
 
-After persistence:
+On a new run:
 
-1. If every `DONE WHEN` check passes, mark the run `Complete`.
-2. Else if any Goal Card stop cap applies, mark it `Stopped`.
-3. Else mark it `In Progress` and wait for `CONTINUE`.
+1. create the run file from the contract below;
+2. record the Goal Card path, version or fingerprint, and resolved stop-caps;
+3. record the context path and current version or fingerprint, or `none`;
+4. set `Status: In Progress`, `Cycle: 0`, and `Stall Count: 0`;
+5. persist before beginning Cycle 1.
 
-Do not manufacture activity when no legal action can improve the result.
+On a resumed run, restore all state from the run file. Conversation history is non-authoritative.
 
-## Run-file minimum
+Reload the Goal Card at the start of every cycle. If its version or content fingerprint differs from the one
+that started the run, persist `Status: Stopped` with reason `Goal Card changed during run`. Do not combine
+checks from different Goal Card versions in one run.
 
-Every run file records:
+## Continuous cycle
 
-- run ID and status;
-- worker, Goal Card, and context versions;
-- timestamps;
-- current and maximum iteration;
-- artifact state or artifact path;
-- maturity state;
+One cycle is:
+
+`Load -> Observe -> Plan -> Act -> Check -> Adjust -> Persist -> Transition`
+
+While the run is `In Progress`:
+
+1. **Load**
+   - Reload the Goal Card, optional context, run file, artifact, and named inputs.
+   - Restore the current Goal Card stage, failed checks, backlog, metrics, and stall count.
+2. **Observe**
+   - Evaluate current artifact evidence against every applicable `DONE WHEN` check.
+   - Identify regressions, blocked inputs, and the highest-priority measurable gap.
+3. **Plan**
+   - Select the smallest legal action set that can improve a failed check or advance a Goal Card stage.
+   - Do not plan work solely to appear active.
+4. **Act**
+   - Perform the selected work inside the Goal Card sandbox.
+   - Follow the Goal Card's current stage and quality rules.
+5. **Check**
+   - Re-run every affected mechanical check.
+   - Record pass, fail, evidence, and the check time.
+6. **Adjust**
+   - Update the ordered backlog and Goal Card stage.
+   - Calculate measurable progress against the previous persisted cycle.
+7. **Persist**
+   - Write the artifact first, then atomically update the run file.
+   - Append exactly one cycle decision note.
+8. **Transition**
+   - If every `DONE WHEN` check passes, mark `Complete`.
+   - Else if a Goal Card stop-cap applies, mark `Stopped`.
+   - Else update the stall count and immediately begin the next cycle in this same invocation.
+
+Do not emit a final response merely because a cycle completed. Do not ask the user to enter `START` between
+cycles.
+
+Progress means at least one persisted, checkable improvement: a failed check passed, a numeric distance to a
+threshold decreased, a required artifact appeared, a stage exit condition passed, or a blocking backlog item
+was resolved. More prose, more tool calls, or a larger artifact is not progress by itself.
+
+## Interruption behavior
+
+The environment may impose a time, tool, permission, or invocation limit before the run becomes terminal.
+Before returning:
+
+1. persist completed work and current check results;
+2. leave `Status: In Progress`;
+3. set `Interruption Reason`;
+4. do not increment the cycle for incomplete work;
+5. state that the same `START` instruction resumes the run.
+
+An environmental interruption is not a designed pause between cycles.
+
+## Run-file contract
+
+Every run file must contain these sections. `templates\use-case-run.baseline.md` is a copyable baseline.
+
+### Metadata
+
+- run ID and status: `In Progress`, `Complete`, or `Stopped`;
+- Goal Card path and starting version or fingerprint;
+- optional context path and latest observed version or fingerprint;
+- created and updated timestamps;
+- current and maximum cycle;
+- stall count and stall cap;
+- current Goal Card stage;
+- artifact paths;
+- interruption reason, when applicable;
+- terminal stop reason, when applicable.
+
+### Authoritative state
+
+- loop preflight results;
+- resolved runtime configuration;
+- current artifact state;
+- every `DONE WHEN` result with evidence;
+- Goal Card stage results;
 - ordered backlog;
-- `DONE WHEN` results;
-- task metrics;
-- stall count;
-- one decision note and progress line per iteration;
-- final stop reason.
+- progress metrics;
+- one decision note per completed cycle.
+
+Each completed-cycle note uses:
+
+`Cycle <n> - checked: <evidence>; result: <passed and failed checks>; action: <change>; delta: <measurable progress>; decision: <continue or stop and why>.`
+
+Persist enough evidence that another agent can resume without conversation history.
 
 ## Response contract
 
-For an in-progress run:
+### Complete
 
-1. State what changed.
-2. State the most important remaining failure.
-3. Tell the user to invoke `CONTINUE run=<run-id>`.
-4. End with the task worker's progress line.
+Report:
 
-For a completed or stopped run:
+1. the completed artifact paths;
+2. cycle count and acceptance result;
+3. any non-blocking evidence gaps;
+4. the persisted progress line.
 
-1. Produce the Goal Card's final output.
-2. Report acceptance results and stop reason.
-3. Persist terminal state.
-4. End with the task worker's progress line.
+### Stopped
 
-For `STATUS`, do not consume an iteration or estimate new counters.
+Report:
 
-For `EXPAND`, do not consume an iteration or mutate authoritative run state. The task worker owns the
-derived-artifact contract and must repeat persisted counters rather than estimate new ones.
+1. the stop reason;
+2. artifact and run-file paths;
+3. failed `DONE WHEN` checks and evidence;
+4. the smallest next action outside this run;
+5. the persisted progress line.
+
+### Interrupted
+
+Report:
+
+1. what was persisted;
+2. the interruption reason;
+3. the exact `START` instruction that resumes the run;
+4. the persisted progress line.
+
+### Status
+
+Report only persisted state and the persisted progress line. Do not estimate or re-evaluate.
+
+The final line for every response is:
+
+`[USE-CASE LOOP] run=<run-id> | cycle=<n>/<max> | stage=<goal-stage> | checks=<passed>/<total> | stall=<n>/<cap> | status=<IN_PROGRESS|COMPLETE|STOPPED>`
