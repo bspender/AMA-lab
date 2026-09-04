@@ -124,32 +124,28 @@ checks from different Goal Card versions in one run.
 
 One cycle is:
 
-`Load -> Observe -> Plan -> Act -> Check -> Adjust -> Persist -> Transition`
+`Assess -> Act -> Verify -> Persist and Decide`
 
 While the run is `In Progress`:
 
-1. **Load**
+1. **Assess**
    - Reload the Goal Card, optional context, run file, artifact, and named inputs.
    - Restore the current Goal Card stage, failed checks, backlog, metrics, and stall count.
-2. **Observe**
    - Evaluate current artifact evidence against every applicable `DONE WHEN` check.
    - Identify regressions, blocked inputs, and the highest-priority measurable gap.
-3. **Plan**
    - Select the smallest legal action set that can improve a failed check or advance a Goal Card stage.
    - Do not plan work solely to appear active.
-4. **Act**
+2. **Act**
    - Perform the selected work inside the Goal Card sandbox.
    - Follow the Goal Card's current stage and quality rules.
-5. **Check**
+3. **Verify**
    - Re-run every affected mechanical check.
    - Record pass, fail, evidence, and the check time.
-6. **Adjust**
    - Update the ordered backlog and Goal Card stage.
    - Calculate measurable progress against the previous persisted cycle.
-7. **Persist**
+4. **Persist and Decide**
    - Write the artifact first, then atomically update the run file.
    - Append exactly one cycle decision note.
-8. **Transition**
    - If every `DONE WHEN` check passes, mark `Complete`.
    - Else if a Goal Card stop-cap applies, mark `Stopped`.
    - Else update the stall count and immediately begin the next cycle in this same invocation.

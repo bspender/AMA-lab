@@ -15,8 +15,8 @@ Everything important is represented in Markdown so the task definition, state, e
 |---|---|
 | [`goal-designer-prompt.md`](goal-designer-prompt.md) | Interview protocol for deciding whether a task deserves a loop and producing an eight-field Goal Card |
 | [`brainstem\loop-orchestrator.md`](brainstem/loop-orchestrator.md) | Domain-neutral control contract for a continuous, bounded, file-backed run |
-| [`templates\use-case-context.baseline.md`](templates/use-case-context.baseline.md) | Optional per-run context for approved sources, runtime parameters, priorities, and tighter constraints |
-| [`templates\use-case-run.baseline.md`](templates/use-case-run.baseline.md) | Copyable schema for persisted run state, evidence, checks, backlog, and cycle decisions |
+| [`brainstem\templates\use-case-context.baseline.md`](brainstem/templates/use-case-context.baseline.md) | Optional per-run context for approved sources, runtime parameters, priorities, and tighter constraints |
+| [`brainstem\templates\use-case-run.baseline.md`](brainstem/templates/use-case-run.baseline.md) | Copyable schema for persisted run state, evidence, checks, backlog, and cycle decisions |
 | [`brainstem\lobster-pound-review-goal-card.md`](brainstem/lobster-pound-review-goal-card.md) | Worked Goal Card for a recurring community-insights task |
 | [`brainstem\lobster-pound-community-context.md`](brainstem/lobster-pound-community-context.md) | Active source locators and runtime values for the Lobster Pound example |
 
@@ -46,7 +46,7 @@ The card is authoritative for task scope, acceptance, quality, and stopping beha
 The orchestrator applies this cycle:
 
 ```text
-Load -> Observe -> Plan -> Act -> Check -> Adjust -> Persist -> Transition
+Assess -> Act -> Verify -> Persist and Decide
 ```
 
 `START` authorizes the agent to continue through all necessary cycles in the same invocation. A cycle does not pause for approval unless the Goal Card requires escalation, a stop-cap applies, or the environment interrupts execution.
@@ -112,8 +112,8 @@ Create `<OneDrive Root>\brainstem\templates\`, then copy:
 | `brainstem\loop-orchestrator.md` | `<OneDrive Root>\brainstem\loop-orchestrator.md` |
 | `brainstem\lobster-pound-review-goal-card.md` | `<OneDrive Root>\brainstem\lobster-pound-review-goal-card.md` |
 | `brainstem\lobster-pound-community-context.md` | `<OneDrive Root>\brainstem\lobster-pound-community-context.md` |
-| `templates\use-case-context.baseline.md` | `<OneDrive Root>\brainstem\templates\use-case-context.baseline.md` |
-| `templates\use-case-run.baseline.md` | `<OneDrive Root>\brainstem\templates\use-case-run.baseline.md` |
+| `brainstem\templates\use-case-context.baseline.md` | `<OneDrive Root>\brainstem\templates\use-case-context.baseline.md` |
+| `brainstem\templates\use-case-run.baseline.md` | `<OneDrive Root>\brainstem\templates\use-case-run.baseline.md` |
 
 The resulting layout is:
 
@@ -174,7 +174,7 @@ Open [`goal-designer-prompt.md`](goal-designer-prompt.md) in an AI assistant and
 Goal Designer conducts up to three interview rounds, challenges vague or judgment-laden criteria, and returns
 either a Goal Card or a reason not to loop the task.
 
-Use [`templates\use-case-context.baseline.md`](templates/use-case-context.baseline.md) when a Goal Card needs
+Use [`brainstem\templates\use-case-context.baseline.md`](brainstem/templates/use-case-context.baseline.md) when a Goal Card needs
 run-specific source locations, parameters, or tighter constraints. Runtime context is optional and cannot weaken
 the Goal Card.
 
