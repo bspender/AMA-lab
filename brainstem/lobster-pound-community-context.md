@@ -21,7 +21,7 @@ Goal Card remains authoritative for acceptance, quality, stages, and stop-caps.
 
 | Setting | Value | Goal Card allowance |
 |---|---|---|
-| Output root | `C:\Users\bspender\OneDrive - Microsoft\brainstem\insights\lobster-pound\` | All Goal Card artifacts |
+| Output root | `C:\Users\bspender\OneDrive - Microsoft\AMA\brainstem\insights\lobster-pound\` | All Goal Card artifacts |
 | Digest naming | `digests\<YYYY-MM-DD>.md` | Reusable daily conversation digests |
 | Report naming | `reports\<window-start>_to_<window-end>.md` using ISO dates | Period report |
 | Run naming | `runs\<run-id>.md` | Run state and decisions |
@@ -54,7 +54,7 @@ All Goal Card quality rules remain in force.
 |---|---|---|---|---|
 | Lobster Pound Teams channel | `https://teams.microsoft.com/l/channel/19%3AvGhTXeZ7TqvSIz4Kz_dxn_c-ZKikC1ZobNY7h-jcK5o1%40thread.tacv2/Lobster%20Pound?groupId=ae25e647-d5e2-45e6-bbd8-8bb8c59d74f5&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47` | All in-window channel messages and replies | Read-only | Yes |
 | Recurring meeting chat | `https://teams.microsoft.com/l/message/19:vGhTXeZ7TqvSIz4Kz_dxn_c-ZKikC1ZobNY7h-jcK5o1@thread.tacv2/1781726708875?tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47&groupId=ae25e647-d5e2-45e6-bbd8-8bb8c59d74f5&parentMessageId=1781726708875&teamName=MCAPS%20Lobster%20Pound%20Community&channelName=Lobster%20Pound` | In-window meeting-chat messages for the selected occurrences | Read-only | Yes |
-| Local meeting knowledge | `C:\Users\bspender\OneDrive - Microsoft\Documents\AMA\vNext\lobster-pound\knowledge\` | Summary and transcript for each of the four most recent in-window occurrences | Read-only local files | Yes |
+| Local meeting knowledge | `C:\Users\bspender\OneDrive - Microsoft\AMA\lobster-pound\knowledge\` | Summary and transcript for each of the four most recent in-window occurrences | Read-only local files | Yes |
 | Community SharePoint Documents | `https://microsoft.sharepoint.com/:f:/r/teams/MCAPSLobsterPound/Shared%20Documents/Forms/AllItems.aspx?id=%2Fteams%2FMCAPSLobsterPound%2FShared%20Documents%2FLobster%20Pound&p=true&share=cgpubhse%2D%5FKRS79VMByp3BgvEgUC6CyLWewVUs2xcMwj%2D3YqHQ` | Approved relevant documents within the linked-document budget | Read-only | No |
 
 ### Local meeting-artifact discovery

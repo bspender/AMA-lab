@@ -105,20 +105,20 @@ In the paths below, `<OneDrive Root>` is the user's OneDrive root, such as
 
 ### 1. Copy the runtime files
 
-Create `<OneDrive Root>\brainstem\templates\`, then copy:
+Create `<OneDrive Root>\AMA\brainstem\templates\`, then copy:
 
 | Repository source | OneDrive destination |
 |---|---|
-| `brainstem\loop-orchestrator.md` | `<OneDrive Root>\brainstem\loop-orchestrator.md` |
-| `brainstem\lobster-pound-review-goal-card.md` | `<OneDrive Root>\brainstem\lobster-pound-review-goal-card.md` |
-| `brainstem\lobster-pound-community-context.md` | `<OneDrive Root>\brainstem\lobster-pound-community-context.md` |
-| `brainstem\templates\use-case-context.baseline.md` | `<OneDrive Root>\brainstem\templates\use-case-context.baseline.md` |
-| `brainstem\templates\use-case-run.baseline.md` | `<OneDrive Root>\brainstem\templates\use-case-run.baseline.md` |
+| `brainstem\loop-orchestrator.md` | `<OneDrive Root>\AMA\brainstem\loop-orchestrator.md` |
+| `brainstem\lobster-pound-review-goal-card.md` | `<OneDrive Root>\AMA\brainstem\lobster-pound-review-goal-card.md` |
+| `brainstem\lobster-pound-community-context.md` | `<OneDrive Root>\AMA\brainstem\lobster-pound-community-context.md` |
+| `brainstem\templates\use-case-context.baseline.md` | `<OneDrive Root>\AMA\brainstem\templates\use-case-context.baseline.md` |
+| `brainstem\templates\use-case-run.baseline.md` | `<OneDrive Root>\AMA\brainstem\templates\use-case-run.baseline.md` |
 
 The resulting layout is:
 
 ```text
-<OneDrive Root>\brainstem\
+<OneDrive Root>\AMA\brainstem\
 |-- loop-orchestrator.md
 |-- lobster-pound-review-goal-card.md
 |-- lobster-pound-community-context.md
@@ -128,11 +128,11 @@ The resulting layout is:
 ```
 
 The active context writes generated artifacts beneath
-`<OneDrive Root>\brainstem\insights\lobster-pound\`; it does not write results back to this repository.
+`<OneDrive Root>\AMA\brainstem\insights\lobster-pound\`; it does not write results back to this repository.
 
 ### 2. Load the contracts
 
-Start an AI session with `<OneDrive Root>\brainstem\` as its working directory. Send:
+Start an AI session with `<OneDrive Root>\AMA\brainstem\` as its working directory. Send:
 
 ```text
 Read @loop-orchestrator.md, @lobster-pound-review-goal-card.md, @lobster-pound-community-context.md, and @templates/use-case-context.baseline.md, then wait for further instructions.
@@ -156,7 +156,7 @@ The orchestrator creates or resumes a run and continues until:
 - the execution environment forces an interruption.
 
 Because the Goal Card declares an output root and run-file location, the omitted `run` argument resolves beneath
-`<OneDrive Root>\brainstem\insights\lobster-pound\runs\`.
+`<OneDrive Root>\AMA\brainstem\insights\lobster-pound\runs\`.
 
 ### 4. Inspect persisted status
 

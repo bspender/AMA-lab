@@ -6,7 +6,7 @@ Produce a trustworthy 30-day understanding of the **MCAPS Lobster Pound Communit
 
 ### OUTPUT
 
-Maintain under `C:\Users\bspender\OneDrive - Microsoft\brainstem\insights\lobster-pound\`:
+Maintain under `C:\Users\bspender\OneDrive - Microsoft\AMA\brainstem\insights\lobster-pound\`:
 
 - `theme-ledger.md` — themes, states, evidence IDs, changes, contradictions, gaps
 - `themes\<theme-id>.md` — evolving theme records and relationships
@@ -59,11 +59,11 @@ Read only:
 - The approved **Lobster Pound** Teams channel, including replies, for the 30-day snapshot window
 - All recurring community meeting occurrences whose scheduled start falls within the frozen 30-day window, including each transcript and in-window meeting chat
 - Up to 50 approved linked documents across the full run
-- Existing state and prior reports under `C:\Users\bspender\OneDrive - Microsoft\brainstem\insights\lobster-pound\`
+- Existing state and prior reports under `C:\Users\bspender\OneDrive - Microsoft\AMA\brainstem\insights\lobster-pound\`
 
 ### CONSTRAINTS
 
-- Write only beneath `C:\Users\bspender\OneDrive - Microsoft\brainstem\insights\lobster-pound\`.
+- Write only beneath `C:\Users\bspender\OneDrive - Microsoft\AMA\brainstem\insights\lobster-pound\`.
 - Never access private chats, other channels, attachments, or unapproved links.
 - Never publish, message, react, edit source content, delete, or change permissions.
 - Never independently declare information official, confidential, or consensus.
