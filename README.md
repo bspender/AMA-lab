@@ -14,9 +14,11 @@ Everything important is represented in Markdown so the task definition, state, e
 | Path | Purpose |
 |---|---|
 | [`goal-designer-prompt.md`](goal-designer-prompt.md) | Interview protocol for deciding whether a task deserves a loop and producing an eight-field Goal Card |
-| [`loop-orchestrator.md`](loop-orchestrator.md) | Domain-neutral control contract for a continuous, bounded, file-backed run |
+| [`brainstem\loop-orchestrator.md`](brainstem/loop-orchestrator.md) | Domain-neutral control contract for a continuous, bounded, file-backed run |
 | [`templates\use-case-context.baseline.md`](templates/use-case-context.baseline.md) | Optional per-run context for approved sources, runtime parameters, priorities, and tighter constraints |
+| [`templates\use-case-run.baseline.md`](templates/use-case-run.baseline.md) | Copyable schema for persisted run state, evidence, checks, backlog, and cycle decisions |
 | [`brainstem\lobster-pound-review-goal-card.md`](brainstem/lobster-pound-review-goal-card.md) | Worked Goal Card for a recurring community-insights task |
+| [`brainstem\lobster-pound-community-context.md`](brainstem/lobster-pound-community-context.md) | Active source locators and runtime values for the Lobster Pound example |
 
 ## Core model
 
@@ -95,49 +97,66 @@ The outcome may be:
 
 One-cycle completion is valid. The purpose of the loop is verified completion, not manufacturing extra passes.
 
-## Quick start
+## Lobster Pound runbook
 
-### 1. Design a Goal Card
+This example runs from a durable OneDrive-backed working directory rather than from the repository checkout.
+In the paths below, `<OneDrive Root>` is the user's OneDrive root, such as
+`C:\Users\<user>\OneDrive - Microsoft`.
 
-Open [`goal-designer-prompt.md`](goal-designer-prompt.md) in an AI assistant and use it as the instruction. The Goal Designer conducts up to three interview rounds, challenges vague or judgment-laden criteria, and returns either a Goal Card or a reason not to loop the task.
+### 1. Copy the runtime files
 
-Save an approved card as Markdown. The [`brainstem`](brainstem) directory contains the current worked example.
+Create `<OneDrive Root>\brainstem\templates\`, then copy:
 
-### 2. Add runtime context only when needed
+| Repository source | OneDrive destination |
+|---|---|
+| `brainstem\loop-orchestrator.md` | `<OneDrive Root>\brainstem\loop-orchestrator.md` |
+| `brainstem\lobster-pound-review-goal-card.md` | `<OneDrive Root>\brainstem\lobster-pound-review-goal-card.md` |
+| `brainstem\lobster-pound-community-context.md` | `<OneDrive Root>\brainstem\lobster-pound-community-context.md` |
+| `templates\use-case-context.baseline.md` | `<OneDrive Root>\brainstem\templates\use-case-context.baseline.md` |
+| `templates\use-case-run.baseline.md` | `<OneDrive Root>\brainstem\templates\use-case-run.baseline.md` |
 
-Copy [`templates\use-case-context.baseline.md`](templates/use-case-context.baseline.md), fill only the applicable fields, and set:
-
-```text
-Status: Active
-```
-
-Omit the context file when the Goal Card already contains every required source and parameter.
-
-### 3. Start the loop
-
-In a repository-aware AI session, instruct the agent to follow [`loop-orchestrator.md`](loop-orchestrator.md), then enter:
+The resulting layout is:
 
 ```text
-START goal=<goal-card-path> [context=<context-path>] [run=<run-file-path>]
+<OneDrive Root>\brainstem\
+|-- loop-orchestrator.md
+|-- lobster-pound-review-goal-card.md
+|-- lobster-pound-community-context.md
+`-- templates\
+    |-- use-case-context.baseline.md
+    `-- use-case-run.baseline.md
 ```
 
-For example:
+The active context writes generated artifacts beneath
+`<OneDrive Root>\brainstem\insights\lobster-pound\`; it does not write results back to this repository.
+
+### 2. Load the contracts
+
+Start an AI session with `<OneDrive Root>\brainstem\` as its working directory. Send:
 
 ```text
-START goal=brainstem\lobster-pound-review-goal-card.md
+Read @loop-orchestrator.md, @lobster-pound-review-goal-card.md, @lobster-pound-community-context.md, and @templates/use-case-context.baseline.md, then wait for further instructions.
 ```
 
-The orchestrator creates or resumes a run, validates that the task is loopable, and continues until:
+This first instruction loads the control contract, Goal Card, active runtime context, and context schema without
+starting work.
+
+### 3. Start or resume the loop
+
+Send:
+
+```text
+START goal=lobster-pound-review-goal-card.md context=lobster-pound-community-context.md
+```
+
+The orchestrator creates or resumes a run and continues until:
 
 - every `DONE WHEN` check passes;
 - a Goal Card stop-cap applies; or
 - the execution environment forces an interruption.
 
-When `run` is omitted, the default location is:
-
-```text
-<goal-directory>\runs\<goal-stem>\<run-id>.md
-```
+Because the Goal Card declares an output root and run-file location, the omitted `run` argument resolves beneath
+`<OneDrive Root>\brainstem\insights\lobster-pound\runs\`.
 
 ### 4. Inspect persisted status
 
@@ -148,6 +167,16 @@ STATUS [run=<run-file-path>]
 ```
 
 `START` and `STATUS` are ordinary instructions, not slash commands.
+
+## Designing another Goal Card
+
+Open [`goal-designer-prompt.md`](goal-designer-prompt.md) in an AI assistant and use it as the instruction. The
+Goal Designer conducts up to three interview rounds, challenges vague or judgment-laden criteria, and returns
+either a Goal Card or a reason not to loop the task.
+
+Use [`templates\use-case-context.baseline.md`](templates/use-case-context.baseline.md) when a Goal Card needs
+run-specific source locations, parameters, or tighter constraints. Runtime context is optional and cannot weaken
+the Goal Card.
 
 ## Resume and interruption behavior
 

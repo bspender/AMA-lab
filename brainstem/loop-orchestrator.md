@@ -56,7 +56,7 @@ stages into the run.
 
 ### Optional runtime context
 
-The `runtime context` file is optional. `templates\use-case-context.baseline.md` defines the recommended structure.
+The `runtime context` file is optional. `<community-reference>-context.md` defines the recommended structure.
 
 - If no `runtime context` path is supplied, or the supplied path does not exist, continue with neutral runtime
   context and record `Runtime-Context: none` in the run file.
@@ -98,9 +98,11 @@ explicitly left open by the Goal Card. It may not create a new acceptance policy
 
 ## Run resolution
 
-The default run path is:
+Resolve the run path in this order:
 
-`<goal-directory>\runs\<goal-stem>\<run-id>.md`
+1. the explicit `run=<run-file-path>` value;
+2. the Goal Card's declared output root and run-file location; or
+3. `<goal-directory>\runs\<goal-stem>\<run-id>.md` when the Goal Card does not declare one.
 
 Use a stable run ID such as `YYYYMMDD-HHMMSS-<short-slug>`. Create the parent directories when needed.
 
