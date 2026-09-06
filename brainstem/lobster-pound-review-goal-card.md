@@ -2,7 +2,7 @@
 
 ### OBJECTIVE
 
-Produce a trustworthy 30-day understanding of the **MCAPS Lobster Pound Community** for the user: what happened, what recurred or changed, and what can be learned—while preserving week-to-week theme evolution and evidence provenance.
+Produce a trustworthy understanding of a frozen 30-day **MCAPS Lobster Pound Community** evidence window for the user: what happened, what recurred or changed, and what can be learned—while preserving week-to-week theme evolution, evidence provenance, and known acquisition limitations.
 
 ### OUTPUT
 
@@ -22,19 +22,20 @@ Persist source IDs, timestamps, and links—not copied source bodies.
 
 All checks pass:
 
-1. **Coverage:** The four most recent meeting occurrences within the frozen 30-day window (or all occurrences if fewer than four) have their accessible transcripts inspected. Every scoped item is covered by either a newly generated digest of channel messages, replies, and meeting-chat messages or a previously verified digest whose source checkpoint remains unchanged. Inaccessible required sources produce an incomplete handback, not success.
-2. **Condensation:** Every conversation item is classified in the source manifest as material evidence, duplicate, or no material signal. Each active day has a digest with evidence IDs; overflow is logged as a gap.
+1. **Coverage:** Every in-window record declared by the accepted snapshot manifest is accounted for. The four most recent in-window meeting occurrences (or all occurrences if fewer than four) have their captured transcripts and summaries inspected. Missing required snapshot files, unreadable records, or fingerprint mismatches produce an incomplete handback, not success. Snapshot coverage does not imply complete upstream Teams coverage.
+2. **Condensation:** Every captured conversation item is classified in the source manifest as material evidence, duplicate, or no material signal and assigned by its own timestamp to exactly one calendar day. Each active day has one digest combining captured channel posts, ordinary replies, and available meeting-conversation replies; overflow is logged as a gap.
 3. **Evidence:** Every factual claim, latest update, and theme-state change cites an inspected source body using source ID/link and timestamp.
 4. **Recurrence:** A “recurring” theme has non-duplicate evidence from at least two distinct weeks and two independent source items.
-5. **Freshness:** The source snapshot is at most 24 hours old. “Current” claims have evidence from the final seven days.
+5. **Freshness:** The report states the frozen source window and snapshot capture timestamp. If the accepted snapshot is more than 24 hours old at run time, no claim is described as “current”; findings are qualified as “as of” the snapshot boundary.
 6. **Latest update:** Each theme’s latest timestamp equals the newest inspected, non-duplicate evidence associated with that theme.
 7. **Duplicates:** Zero unresolved duplicate candidates; duplicate echoes do not count as independent momentum.
 8. **Contradictions:** Zero unresolved blocking contradictions. Non-blocking disagreement is explicitly represented.
 9. **Evolution:** Every theme change records prior state, new state, effective week, evidence IDs, and rationale.
 10. **Gaps:** Every recorded gap has an attempted remedy and result.
 11. **Privacy:** Zero private-chat, other-channel, attachment, or unapproved-source content appears in persisted artifacts.
-12. **Continuity:** Reuse existing daily digests. Reinspect new or changed items plus the trailing seven days for late replies, edits, or newly available evidence. Update only affected digests and record each change. The run reconciles changes against the prior ledger and immutable prior report.
-13. **Structure:** The report answers all three objective questions and the run file records every check as pass/fail with evidence.
+12. **Integrity:** The snapshot map, manifest, required evidence files, and declared fingerprints are validated before analysis. Conflicted identities remain quarantined unless the accepted snapshot explicitly records their adjudication.
+13. **Continuity:** Reuse existing daily digests when their source checkpoint is unchanged. When the accepted snapshot changes, reinspect new or changed records plus the trailing seven days, update only affected digests, and record each change. The run reconciles changes against the prior ledger and immutable prior report.
+14. **Structure:** The report answers all three objective questions, labels analytical coverage separately from upstream acquisition completeness, and records every check as pass/fail with evidence.
 
 These thresholds are **pilot assumptions** to recalibrate after the first run.
 
@@ -51,13 +52,16 @@ These thresholds are **pilot assumptions** to recalibrate after the first run.
 - Daily digests do not replace original-source citations.
 - Meeting chat alone cannot establish recurrence, consensus, or momentum.
 - Material disagreement or minority signals must not be silently dropped.
+- State “snapshot processing complete; upstream acquisition incomplete” whenever the accepted snapshot reports incomplete acquisition.
+- Never interpret a missing source record as evidence that no activity occurred.
 
 ### CONTEXT
 
 Read only:
 
-- The approved **Lobster Pound** Teams channel, including replies, for the 30-day snapshot window
-- All recurring community meeting occurrences whose scheduled start falls within the frozen 30-day window, including each transcript and in-window meeting chat
+- The approved staged source snapshot and its dataset map, manifest, evidence files, conflicts, and companion content
+- Optional live reads from the approved **Lobster Pound** Teams channel and meeting conversation for delta discovery or gap repair
+- Captured meeting transcripts and summaries for occurrences within the frozen 30-day window
 - Up to 50 approved linked documents across the full run
 - Existing state and prior reports under `C:\Users\bspender\OneDrive - Microsoft\AMA\brainstem\insights\lobster-pound\`
 
@@ -70,10 +74,12 @@ Read only:
 - Escalate ambiguous attribution, sensitive judgments, access expansion, and theme merges/redefinitions with multiple defensible interpretations.
 - Each cycle records one line: `Decision: <continue|complete|stop> — <check result or state change that justifies it>.`
 - The 2000-character limit excludes source IDs, links, and timestamps.
+- Treat the accepted snapshot as read-only: do not rewrite, normalize, reorder, or silently repair primary evidence.
+- Before analysis, verify that the output location can create, read, and delete a temporary Markdown file. Stop with an incomplete handback if the probe fails.
 
 ### STAGES
 
-1. **Inventory evidence:** Freeze the 30-day window, retrieve required sources, and build the source manifest.
+1. **Inventory evidence:** Freeze the 30-day window, verify output write capability, validate the accepted snapshot, and build the run source manifest.
 2. **Condense and reconcile:** Create bounded daily digests, then reconcile evidence by week into the evolving ledger.
 3. **Verify and repair:** Check coverage, provenance, recurrence, freshness, contradictions, privacy, gaps, and continuity; repair failures.
 4. **Persist understanding:** Update permitted state files and write the period report only when every completion check passes.
