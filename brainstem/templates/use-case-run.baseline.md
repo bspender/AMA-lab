@@ -29,6 +29,7 @@
 | Checkable finish line | Pending | |
 | Bounded sandbox | Pending | |
 | Convergent task | Pending | |
+| Feasible cycle budget | Pending | |
 | Bounded execution | Pending | |
 | Bounded delegation | Pending | |
 
@@ -54,15 +55,15 @@ One target slice is active per cycle. Persist it before action or child dispatch
 | Expected Measurable Delta | |
 | Verification Method | |
 | Delegation Decision | |
-| Candidate Selection Rubric | |
 
-## Child Execution Manifest
+## Child Activity Log
 
+Add one row per launch before dispatch, update that row with its outcome, and retain completed rows across cycles.
 The parent is the sole writer to authoritative artifacts and integrates results in declared child-ID order.
 
-| Child ID | Task Boundary | Allowed Inputs | Expected Result | Integration Order | Attempts | Status | Integration Decision |
-|---|---|---|---|---:|---:|---|---|
-| | | | | | 0 | | |
+| Cycle | Slice ID | Child ID | Launch | Task Boundary | Input Partition | Integration Order | Status | Accepted Contribution or Failure |
+|---:|---|---|---:|---|---|---:|---|---|
+| | | | | | | | | |
 
 ## Artifact State
 
@@ -90,9 +91,19 @@ Use only stages named by the Goal Card.
 
 ## Ordered Backlog
 
-| Priority | Action | Failed Check or Stage | State |
-|---:|---|---|---|
-| 1 | | | Pending |
+This table is the current ranking. Give each item a stable ID.
+
+| Priority | Backlog ID | Action | Failed Check or Stage | State |
+|---:|---|---|---|---|
+| 1 | | | | Pending |
+
+## Backlog Decision History
+
+Append every material addition, removal, split, merge, or rank change.
+
+| Cycle | Backlog ID | Prior Rank | New Rank | Decision and Rationale | Evidence |
+|---:|---|---:|---:|---|---|
+| | | | | | |
 
 ## Progress Metrics
 
@@ -100,20 +111,13 @@ Use only stages named by the Goal Card.
 |---|---:|---:|---:|---:|
 | Passing DONE WHEN checks | 0 | 0 | | 0 |
 
-## Cycle Log
+## Slice and Cycle History
 
 Append exactly one row for every completed cycle.
 
-| Cycle | Timestamp | Context Version / Fingerprint | Checked | Result | Action | Measurable Delta | Decision Note |
-|---:|---|---|---|---|---|---|---|
-
-## Console Milestones
-
-Record the latest persisted state associated with each required console heartbeat.
-
-| Timestamp | Milestone | Cycle | Slice ID | Child ID | State Persisted |
-|---|---|---:|---|---|---|
-| | Run initialized | 0 | none | | Yes |
+| Cycle | Timestamp | Context Version / Fingerprint | Slice ID | Goal Stage | Primary Target | Why This Slice | Expected Delta | Observed Delta | Affected Checks | Decision |
+|---:|---|---|---|---|---|---|---|---|---|---|
+| | | | | | | | | | | |
 
 ## Persisted Progress Line
 

@@ -1,7 +1,7 @@
 # Lobster Pound Community Runtime Context
 
 Status: **Active**
-Context Version: 4
+Context Version: 5
 Applies To Goal: `lobster-pound-review-goal-card.md`
 Last Updated: 2026-09-07
 
@@ -41,9 +41,10 @@ content into this repository.
 | Reinspection overlap | Trailing seven days | Continuity |
 | Optional linked-document budget | 50 documents across the run | Stop-caps |
 | Optional-source status | Optional; absence or incomplete retrieval does not block primary analytical completion | Coverage and structure |
-| Target slices | One primary failed check or stage exit condition per cycle | Convergence |
-| Preferred child fan-out | 3 children when the target slice safely decomposes; otherwise record why fewer are used | Child-agent execution |
-| Maximum child execution | 4 unique children per cycle and 12 dispatch attempts across the run; delegation depth 1; one retry per child | Bounded execution |
+| Target slices | One primary failed check or stage exit condition per cycle; record every other legitimately affected check | Convergence |
+| Conditional child fan-out | Use 2–3 children only when the target slice has separable evidence partitions or complementary checks | Child-agent execution |
+| Maximum child execution | 3 children per cycle and 12 total launches across the run; delegation depth 1; one transient-failure retry per child | Bounded execution |
+| Cycle budget posture | Retain the 10-cycle Goal Card cap; preflight must show a credible convergence path within it | Bounded execution |
 
 ## QUALITY Priorities
 
@@ -84,9 +85,9 @@ All Goal Card quality rules remain in force.
 | `knowledge_root` | `C:\Users\bspender\OneDrive - Microsoft\AMA\knowledge` | Primary transcript and meeting-summary discovery |
 | `meeting_series_name` | `MCAPS Lobster Pound | Show & Tell` | Optional meeting-series lookup and identity verification |
 | `meeting_series_root_id` | `1781726708875` | Meeting-conversation classification |
-| `preferred_children_per_slice` | `3` | Parallel evidence partitions or complementary checks when useful |
-| `max_children_per_cycle` | `4` | Child-agent execution bound |
-| `max_child_dispatch_attempts_per_run` | `12` | Run-level child-agent execution bound; launches, retries, and re-dispatches count |
+| `conditional_children_per_slice` | `2-3` | Use only for real parallel evidence partitions or complementary checks |
+| `max_children_per_cycle` | `3` | Child-agent execution bound |
+| `max_child_launches_per_run` | `12` | Every initial launch, retry, and interruption re-dispatch counts |
 | `max_delegation_depth` | `1` | Prevent child agents from spawning descendants |
 
 ## CONSTRAINTS Additions
@@ -119,4 +120,5 @@ No tighter runtime overrides. Inherit all Goal Card stop-caps.
 - When the knowledge corpus changes, reinspect new or changed documents plus the trailing seven days.
 - Meeting metadata, meeting chat, community chat, and SharePoint retrieval are optional enrichment and do not block primary analytical completion.
 - Analytical completion means complete processing of the in-window primary knowledge corpus, not exhaustive Microsoft 365 acquisition.
-- Prefer three child agents for safely separable slices in this demonstration, but do not invent work or overlap source ownership merely to reach that count.
+- Use two or three child agents only when a slice safely decomposes; otherwise use one or none and record why.
+- Preserve the 10-cycle cap as design pressure. Each slice has one primary target but may advance multiple affected checks when the evidence supports it.
