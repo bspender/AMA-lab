@@ -18,6 +18,13 @@
 | Stall Cap | |
 | Current Goal Stage | |
 | Current Target Slice | none |
+| Output Root Resolution | |
+| Resolved Output Root | |
+| Primary Root Failure | |
+| Event Log Path | |
+| Event Count | 0 |
+| Last Event Sequence | 0 |
+| Latest Event | none |
 | Artifact Paths | |
 | Interruption Reason | |
 | Stop Reason | |
@@ -38,6 +45,15 @@
 | Setting | Value | Source |
 |---|---|---|
 | | | Goal Card or context |
+
+## Work Event Log
+
+The authoritative event record is `<run-id>.events.jsonl`. This table is a derived cycle-level view, rebuilt from
+the sidecar at cycle boundaries. Never add a row without matching sidecar events.
+
+| Cycle | Started | Ended | Slice ID | Primary Target | Validation Failures | Checks Before | Checks After | Decision |
+|---:|---|---|---|---|---:|---:|---:|---|
+| | | | | | | | | |
 
 ## Current Target Slice
 
@@ -113,7 +129,7 @@ Append every material addition, removal, split, merge, or rank change.
 
 ## Slice and Cycle History
 
-Append exactly one row for every completed cycle.
+Derive one summary row for every completed cycle from the event sidecar. Do not reconstruct missing events.
 
 | Cycle | Timestamp | Context Version / Fingerprint | Slice ID | Goal Stage | Primary Target | Why This Slice | Expected Delta | Observed Delta | Affected Checks | Decision |
 |---:|---|---|---|---|---|---|---|---|---|---|

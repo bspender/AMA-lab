@@ -127,6 +127,7 @@ After the run, students inspect the run file created from
 
 The most important sections are:
 
+- **Work Event Log:** Does the JSONL sidecar contain sequential events for failures and retries as they happened?
 - **DONE WHEN Results:** Which checks passed, failed, and why?
 - **Slice and Cycle History:** What did each cycle try, and what changed?
 - **Backlog Decision History:** Why did the next problem move up or down?

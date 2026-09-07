@@ -100,6 +100,28 @@ explicitly left open by the Goal Card. It may not create a new acceptance policy
 The feasible-cycle-budget test is a capacity check based on current evidence, not a static cycle plan. Record its
 assumptions, then allow observed results to determine later slices.
 
+### Run-start persistence test
+
+When source access may apply a sensitivity label or other write restriction, test persistence after creating the
+run file. The `persistence_test` event follows the verified `run_initialized` event:
+
+1. read one representative required source using the same access path planned for the run;
+2. append and verify a `persistence_test` event in the event sidecar;
+3. update and reread the actual run file;
+4. verify that both files remain readable and consistent.
+
+Resolve the write location before Cycle 1. Attempt the primary output root first. If the write or reread fails for
+an environmental reason, such as permission, sensitivity label, quota, or an unavailable path, and the Goal Card
+allows a fallback output root, repeat the same test against that fallback using the same artifact formats. Copy the
+current run state and event sidecar to the fallback and continue there only after both can be updated and reread.
+Never change an artifact's format to satisfy a write restriction.
+
+Record `Output-Root-Resolution: primary | fallback` in run metadata. When fallback is used, also record the primary
+failure reason and open one non-blocking gap with the attempted remedy and result. Only when no fallback is allowed,
+or the fallback test also fails, set the run to `Stopped` with reason `unsafe persistence` and return the incomplete
+handback defined by the Goal Card. This is an environment failure, not a `don't loop this` verdict. Do not create a
+separate probe file and do not require deletion support.
+
 ## Convergence and target slices
 
 The unit of iteration is one **target slice**, not a broad pass over the artifact. A target slice is the smallest
@@ -128,6 +150,45 @@ its Goal Card exit conditions pass. Append the completed slice, expected and obs
 decision rationale to the cycle history. Append every material backlog rank change and its evidence to the backlog
 decision history. These histories are part of the evidence that the run converged rather than followed a hidden
 static plan.
+
+## Work Event Log
+
+`runs\<run-id>.events.jsonl` is the authoritative live record of execution. Append one compact JSON object when
+each event occurs. Never rewrite, delete, reorder, or reconstruct prior lines. The Markdown run file contains a
+derived event summary and current state.
+
+Every event line contains:
+
+- `seq`: integer, starting at 1 and increasing by exactly 1;
+- `ts`: event time with timezone;
+- `cycle`, `event`, and `slice`;
+- `check` or `artifact` when applicable;
+- `attempt`, `observed`, and `next` for validation failures;
+- `checks_passing`, `stall`, and `decision` when applicable.
+
+Before each append, read the last line and next sequence number. After appending, reread the last line and verify
+the sequence number and event. If an event cannot be appended and verified, stop rather than continue with an
+unrecorded run. A run with reconstructed, missing, or reordered events cannot complete successfully.
+
+When the platform has no native append operation, logical append is allowed: read the small sidecar, republish it
+with every prior byte unchanged and exactly one new JSON line added, then verify the last line. Do not republish
+the larger Markdown run file for each event; update it only at run initialization, cycle boundaries, interruption,
+and terminal state.
+
+Required durable checkpoints are:
+
+- `run_initialized` or `run_resumed`;
+- `persistence_test`, when the representative-source test applies;
+- `cycle_started`, after the cycle number and target slice are persisted;
+- `validation_failed`, before a retry, with the saved artifact or candidate, failed rule, observed value, and next
+  repair;
+- `validation_passed`, after validating the reread saved artifact;
+- `cycle_ended`, with the observed delta and continue, complete, or stop decision;
+- `interrupted` or `stopped`, when applicable.
+
+Record tool errors, timeouts, and permission failures when they change the next action. Multiple validation attempts
+belong inside one target slice unless they change the primary target. Derive the Slice and Cycle History from the
+sidecar at each cycle boundary; do not remember or reconstruct it separately.
 
 ## Child-agent execution
 
@@ -164,16 +225,18 @@ Resolve the run path in this order:
 3. `<goal-directory>\runs\<goal-stem>\<run-id>.md` when the Goal Card does not declare one.
 
 Use a stable run ID such as `YYYYMMDD-HHMMSS-<short-slug>`. Create the parent directories when needed.
+The event-log path is the run-file path with `.md` replaced by `.events.jsonl`.
 
 On a new run:
 
-1. create the run file from the contract below;
+1. create the run file from the contract below and an empty event-log sidecar;
 2. record the Goal Card path, version or fingerprint, and resolved stop-caps;
 3. record the context path and current version or fingerprint, or `none`;
 4. set `Status: In Progress`, `Cycle: 0`, and `Stall Count: 0`;
-5. persist before beginning Cycle 1.
+5. append and verify `run_initialized` in the event log, then save and reread the run file before Cycle 1.
 
-On a resumed run, restore all state from the run file. Conversation history is non-authoritative.
+On a resumed run, restore all state from the run file and event log, append and verify `run_resumed`, then save and
+reread the run file before continuing. Conversation history is non-authoritative.
 
 Reload the Goal Card at the start of every cycle. If its version or content fingerprint differs from the one
 that started the run, persist `Status: Stopped` with reason `Goal Card changed during run`. Do not combine
@@ -196,13 +259,20 @@ While the run is `In Progress`:
    - Identify regressions, blocked inputs, and the highest-priority measurable gap.
    - Select and persist one target slice that can improve a primary failed check or stage exit condition.
    - Define the expected delta, verification method, and bounded child-agent plan.
+   - Append and verify the `cycle_started` event before beginning action.
    - Do not plan work solely to appear active.
 2. **Act**
    - Perform only the persisted target slice inside the Goal Card sandbox.
    - Dispatch bounded child tasks when useful, then validate and integrate them under the child-agent contract.
    - Follow the Goal Card's current stage and quality rules.
 3. **Verify**
-   - Re-run the target slice's verification method and every affected `DONE WHEN` evaluation procedure.
+   - Validate candidate content before writing when possible, returning actionable violations instead of aborting
+     before the repair can be recorded.
+   - After every artifact write, reread the saved file and run the target slice's verification method and every
+     affected `DONE WHEN` evaluation procedure against that reread content.
+   - Never mark a check passed from in-memory content, a planned edit, or a successful write response alone.
+   - Before each retry, append and verify a `validation_failed` event containing the rule, observed value, attempt,
+     and next repair. Append and verify `validation_passed` only after the saved artifact passes.
    - Record pass, fail, evidence, and the check time.
    - Update the ordered backlog and Goal Card stage.
    - Calculate measurable progress against the previous persisted cycle.
@@ -213,7 +283,10 @@ While the run is `In Progress`:
    - Otherwise set `Stall Count` to `0` when the cycle made measurable progress, or increment it by `1` when the
      cycle made no measurable progress. Persist it before evaluating stop-caps.
    - If a Goal Card stop-cap applies, mark `Stopped`.
-   - Else immediately begin the next cycle and dynamically select its target slice in this same invocation.
+   - Append and verify the `cycle_ended` event with the decision.
+   - Rebuild the Markdown Slice and Cycle History from the event sidecar, update `Updated`, save the run file, and
+     reread it at every cycle boundary.
+   - If continuing, immediately begin the next cycle and dynamically select its target slice in this same invocation.
 
 Do not emit a final response merely because a cycle completed. Do not ask the user to enter `START` between
 cycles.
@@ -231,11 +304,12 @@ Before returning:
 2. leave `Status: In Progress`;
 3. set `Interruption Reason`;
 4. persist the target-slice status and every child status or integration decision;
-5. if the target slice is incomplete, resume it with the same cycle number and re-dispatch only children that are
+5. append and verify the `interrupted` event;
+6. if the target slice is incomplete, resume it with the same cycle number and re-dispatch only children that are
    not already integrated; every re-dispatch consumes a run-level launch;
-6. if the prior cycle decision is fully persisted and no target slice is active, begin a fresh cycle at the prior
+7. if the prior cycle decision is fully persisted and no target slice is active, begin a fresh cycle at the prior
    cycle number plus one;
-7. state that the same `START` instruction resumes the run.
+8. state that the same `START` instruction resumes the run.
 
 An environmental interruption is not a designed pause between cycles.
 
@@ -253,6 +327,7 @@ Every run file must contain these sections. `templates\use-case-run.baseline.md`
 - stall count and stall cap;
 - current Goal Card stage;
 - current target slice and its expected delta;
+- output-root resolution and, when fallback is used, the primary-root failure reason;
 - child-agent limits, launch count, and integration state;
 - artifact paths;
 - interruption reason, when applicable;
@@ -263,6 +338,7 @@ Every run file must contain these sections. `templates\use-case-run.baseline.md`
 - loop preflight results;
 - resolved runtime configuration;
 - current target slice;
+- event-log path, line count, last sequence number, and latest event;
 - retained child activity and integration results;
 - current artifact state;
 - every `DONE WHEN` result with evidence;
@@ -281,23 +357,20 @@ file is not visible during execution. It may be preceded by one short narration 
 or child, but emit the heartbeat itself as the exact standalone line defined below without a prefix, suffix, code
 fence, or changed field order.
 
-Emit the line at these milestones:
+Emit the line only after appending and verifying one of these durable event checkpoints:
 
 1. run initialization or resume;
-2. cycle start after the target slice is persisted;
-3. child dispatch after the planned activity rows are persisted;
-4. each child result after its status and integration decision are persisted;
-5. completion of `Act`;
-6. completion of `Verify`;
-7. cycle persistence and continue/complete/stop decision;
-8. interruption handling.
+2. cycle start;
+3. validation failure or validation pass;
+4. cycle end;
+5. interruption or stop.
 
-The line may repeat unchanged when a milestone does not change its fields. Do not suppress these repetitions:
-they demonstrate liveness. `cycle` is the active persisted attempt, `checks` uses the fixed set of Goal Card
-`DONE WHEN` checks, and `stage` uses only the current Goal Card stage. Replace line breaks or `|` characters in a
-stage name with a single space so the line remains parseable. Persist durable state changes before reporting them,
-but a liveness-only heartbeat does not require an otherwise unnecessary run-file write. Console heartbeats never
-substitute for required run-file persistence.
+The short narration line is required. At cycle start, name the slice, primary target, and why it was chosen. For a
+validation failure, name the rule, observed value, attempt, and next repair. At cycle end, name the observed delta,
+check-count change, decision, and next slice when continuing. `cycle` is the active persisted attempt, `checks`
+uses the fixed set of Goal Card `DONE WHEN` checks, and `stage` uses only the current Goal Card stage. Replace line
+breaks or `|` characters in a stage name with a single space so the line remains parseable. Do not emit decorative
+heartbeats without a verified event.
 
 ## Response contract
 

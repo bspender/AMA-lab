@@ -175,7 +175,7 @@ Before changing anything, find:
 1. the source window;
 2. required and optional sources;
 3. the output location;
-4. the 14 finish-line checks;
+4. the 16 finish-line checks;
 5. the cycle and stall limits.
 
 ### Step 2: Update the local paths
@@ -283,24 +283,35 @@ The context writes results under:
 <OneDrive Root>\AMA\brainstem\insights\lobster-pound\
 ```
 
+If that root rejects a declared format after a labeled source is opened, the
+worked context allows the same Markdown artifacts and JSONL event sidecar under
+`output\lobster-pound\` in the Cowork session. The run file records which root
+was used and why. Fallback files are not automatically copied back to the
+primary root.
+
 Start with the run file in `runs\`. Inspect:
 
 1. **Loop Preflight** — Was the goal safe, checkable, and possible within the
    cycle limit?
-2. **DONE WHEN Results** — Which checks passed or failed, and what evidence was
+2. **Work Event Log** — Are cycle starts, validation failures, retries, and
+   cycle endings backed by sequential events in the `.events.jsonl` sidecar?
+3. **DONE WHEN Results** — Which checks passed or failed, and what evidence was
    recorded?
-3. **Slice and Cycle History** — Why was each repair chosen, and what changed?
-4. **Backlog Decision History** — Why did remaining work move up or down?
-5. **Child Activity Log** — Which work was delegated and accepted?
-6. **Stop Reason and final cycle decision** — Why did the run complete or stop?
-7. **Persisted Progress Line** — What was the final cycle, stage, check count,
+4. **Slice and Cycle History** — Why was each repair chosen, and what changed?
+5. **Backlog Decision History** — Why did remaining work move up or down?
+6. **Child Activity Log** — Which work was delegated and accepted?
+7. **Stop Reason and final cycle decision** — Why did the run complete or stop?
+8. **Persisted Progress Line** — What was the final cycle, stage, check count,
    stall count, and status?
 
+Open the matching `.events.jsonl` file and confirm that sequence numbers are
+continuous and its events match the Markdown cycle summaries.
+
 Inspect the files that the run created. A completed run should include the final
-report plus the digests, theme ledger, theme files, glossary, taxonomy, and open
-questions named by the Goal Card. A stopped or interrupted run may contain only
-part of that set. Do not treat a missing final report as a separate error when
-the run did not complete.
+report plus occurrence records, digests, commitments, the theme ledger, theme
+files, glossary, taxonomy, and open questions named by the Goal Card. A stopped
+or interrupted run may contain only part of that set. Do not treat a missing
+final report as a separate error when the run did not complete.
 
 ### Step 9: Read status without doing work
 
@@ -369,8 +380,11 @@ should be recorded as gaps without being treated as proof that nothing happened.
 
 ### The output path cannot be written
 
-The Goal Card requires a create, read, and delete test before analysis. Correct
-the path or permissions, then start again.
+The Goal Card reads one representative required source, then updates and rereads
+the actual run file before broad analysis. This catches write restrictions that
+appear only after labeled content is opened. The worked context then tries its
+Markdown fallback root. The run stops only if that fallback is absent or also
+fails.
 
 ## What counts as progress
 
