@@ -88,6 +88,7 @@ Before Cycle 1, validate the run as a loop:
 | Bounded sandbox | Allowed inputs, write locations, and prohibited actions are explicit |
 | Convergent task | A failed check or stage condition can produce a smaller actionable backlog |
 | Bounded execution | `STOP-CAPS` defines a hard cycle cap and a no-progress stall cap |
+| Bounded delegation | Child-agent count, recursion, write ownership, and integration rules are explicit |
 
 If any test fails, do not execute the task as a loop. Create or update the run file as `Stopped`, identify the
 failed preflight test, and respond with `don't loop this` plus the best single-prompt formulation supported by
@@ -95,6 +96,60 @@ the Goal Card.
 
 Resolve all runtime parameters before work begins. A runtime context value may fill a variable or choice
 explicitly left open by the Goal Card. It may not create a new acceptance policy.
+
+## Convergence and target slices
+
+The unit of iteration is one **target slice**, not a broad pass over the artifact. A target slice is the smallest
+coherent fix that can produce a measurable improvement to one primary failed check or one stage exit condition.
+Goal Card stages remain the only stages; target slices, cycle mechanics, and child-agent roles must not be
+represented as additional stages.
+
+Before `Act`, persist one target slice containing:
+
+- a stable slice ID and one-sentence fix objective;
+- the primary failed check or stage exit condition it is intended to improve;
+- the specific backlog item IDs, source partition, and artifact scope in bounds;
+- the expected measurable delta and verification method;
+- the child-agent plan, or the reason no delegation is useful.
+
+One cycle integrates only its target slice. Tightly coupled prerequisite changes may be included when they are
+necessary to verify that slice, but unrelated backlog items wait for later cycles. Do not turn Cycle 1 into a
+full-task implementation: establish the baseline, select the highest-value fix slice, and improve only that slice.
+Assessment may inspect enough context to choose safely, but inspection must not become unbounded action on other
+slices.
+
+At cycle end, re-rank the remaining backlog from observed results. The next slice is chosen dynamically; do not
+predeclare one static stage or slice per anticipated cycle. A stage may span several slices and advances only when
+its Goal Card exit conditions pass.
+
+## Child-agent execution
+
+Child agents are optional execution units inside a target slice, not independent loop owners. Use multiple child
+agents when the selected slice has separable evidence partitions, complementary checks, or competing candidate
+approaches. Never create make-work solely to satisfy an agent count.
+
+Unless the Goal Card or runtime context sets tighter bounds, use:
+
+- maximum 4 child agents per cycle;
+- maximum 12 child dispatch attempts across the run;
+- maximum delegation depth 1: child agents must not spawn descendants;
+- maximum 1 retry for a failed child task.
+
+Before dispatch, persist a child execution manifest with stable child IDs, task boundaries, allowed inputs,
+expected result shape, integration order, and any candidate-selection rubric. Every child must receive the Goal
+Card constraints and the current target slice. Child tasks must be non-overlapping or explicitly complementary.
+A retry reuses the stable child ID and does not consume another per-cycle child slot, but every launch, retry, or
+interruption re-dispatch consumes one run-level dispatch attempt. Never retry an already integrated child result.
+
+The executing parent agent is the sole writer to authoritative artifacts and the run file. Children inspect
+read-only inputs and return bounded results or write only to declared isolated scratch paths. The parent validates
+and integrates results serially in declared child-ID order, never completion order. Record failures, overlap,
+conflicts, rejected results, retries, and accepted contributions. A child result cannot expand the target slice;
+newly discovered work becomes backlog for a later cycle.
+
+For competing candidate approaches, persist the evaluation rubric before dispatch, select the highest-ranked
+verified result, and break ties by ascending child ID. For additive, non-overlapping results, integration order is
+ascending child ID. These rules make selection and integration deterministic even though model outputs are not.
 
 ## Run resolution
 
@@ -133,13 +188,17 @@ While the run is `In Progress`:
    - Restore the current Goal Card stage, failed checks, backlog, metrics, and stall count.
    - Evaluate current artifact evidence against every applicable `DONE WHEN` check.
    - Identify regressions, blocked inputs, and the highest-priority measurable gap.
-   - Select the smallest legal action set that can improve a failed check or advance a Goal Card stage.
+   - Select and persist one target slice that can improve a primary failed check or stage exit condition.
+   - A fresh cycle sets `Cycle` to the prior cycle number plus one before action. An interrupted active slice
+     resumes with the same cycle number.
+   - Define the expected delta, verification method, and bounded child-agent plan.
    - Do not plan work solely to appear active.
 2. **Act**
-   - Perform the selected work inside the Goal Card sandbox.
+   - Perform only the persisted target slice inside the Goal Card sandbox.
+   - Dispatch bounded child tasks when useful, then validate and integrate them under the child-agent contract.
    - Follow the Goal Card's current stage and quality rules.
 3. **Verify**
-   - Re-run every affected mechanical check.
+   - Re-run the target slice's verification method and every affected mechanical check.
    - Record pass, fail, evidence, and the check time.
    - Update the ordered backlog and Goal Card stage.
    - Calculate measurable progress against the previous persisted cycle.
@@ -147,8 +206,9 @@ While the run is `In Progress`:
    - Write the artifact first, then atomically update the run file.
    - Append exactly one cycle decision note.
    - If every `DONE WHEN` check passes, mark `Complete`.
-   - Else if a Goal Card stop-cap applies, mark `Stopped`.
-   - Else update the stall count and immediately begin the next cycle in this same invocation.
+   - Otherwise calculate and persist the next stall count before evaluating stop-caps.
+   - If a Goal Card stop-cap applies, mark `Stopped`.
+   - Else immediately begin the next cycle and dynamically select its target slice in this same invocation.
 
 Do not emit a final response merely because a cycle completed. Do not ask the user to enter `START` between
 cycles.
@@ -165,8 +225,12 @@ Before returning:
 1. persist completed work and current check results;
 2. leave `Status: In Progress`;
 3. set `Interruption Reason`;
-4. do not increment the cycle for incomplete work;
-5. state that the same `START` instruction resumes the run.
+4. persist the target-slice status and every child status or integration decision;
+5. if the target slice is incomplete, resume it with the same cycle number and re-dispatch only children that are
+   not already integrated; every re-dispatch consumes a run-level dispatch attempt;
+6. if the prior cycle decision is fully persisted and no target slice is active, begin a fresh cycle at the prior
+   cycle number plus one;
+7. state that the same `START` instruction resumes the run.
 
 An environmental interruption is not a designed pause between cycles.
 
@@ -183,6 +247,8 @@ Every run file must contain these sections. `templates\use-case-run.baseline.md`
 - current and maximum cycle;
 - stall count and stall cap;
 - current Goal Card stage;
+- current target slice and its expected delta;
+- child-agent limits, execution manifest, results, and integration state;
 - artifact paths;
 - interruption reason, when applicable;
 - terminal stop reason, when applicable.
@@ -191,6 +257,8 @@ Every run file must contain these sections. `templates\use-case-run.baseline.md`
 
 - loop preflight results;
 - resolved runtime configuration;
+- current target slice;
+- child execution manifest and integration results;
 - current artifact state;
 - every `DONE WHEN` result with evidence;
 - Goal Card stage results;
@@ -203,6 +271,28 @@ Each completed-cycle note uses:
 `Cycle <n> - checked: <evidence>; result: <passed and failed checks>; action: <change>; delta: <measurable progress>; decision: <continue or stop and why>.`
 
 Persist enough evidence that another agent can resume without conversation history.
+
+## Console progress protocol
+
+The progress line is both the final response footer and a live console heartbeat for environments where the run
+file is not visible during execution. Emit the exact standalone line defined below, without a prefix, suffix,
+code fence, or changed field order.
+
+Persist the corresponding state first, then emit the line at these milestones:
+
+1. run initialization or resume;
+2. cycle start after the target slice is persisted;
+3. each child result after its status and integration decision are persisted;
+4. completion of `Act`;
+5. completion of `Verify`;
+6. cycle persistence and continue/complete/stop decision;
+7. interruption handling.
+
+The line may repeat unchanged when a milestone does not change its fields. Do not suppress these repetitions:
+they demonstrate liveness. `cycle` is the active persisted attempt, `checks` uses the fixed set of Goal Card
+`DONE WHEN` checks, and `stage` uses only the current Goal Card stage. Replace line breaks or `|` characters in a
+stage name with a single space so the line remains parseable. Console heartbeats never substitute for run-file
+persistence.
 
 ## Response contract
 
