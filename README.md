@@ -1,34 +1,63 @@
 # AMA Loop Engineering Lab
 
-A small, file-driven lab for designing and running bounded AI work loops.
+This lab teaches you how to design and inspect an AI work loop with clear
+limits.
 
-The repository separates two concerns:
+You will learn how to:
 
-1. **Goal design** turns a recurring task into a checkable, bounded Goal Card.
-2. **Loop execution** uses that Goal Card to plan, act, check, adjust, and persist until the work is complete or a stop condition applies.
+1. turn a vague task into a clear goal;
+2. define what passing means before work begins;
+3. let an agent repair one important gap at a time;
+4. watch progress while the agent works;
+5. inspect why the run completed or stopped.
 
-Everything important is represented in Markdown so the task definition, state, evidence, and decisions remain inspectable outside any single AI conversation.
+All instructions and run state use Markdown files. You do not need to build a
+workflow engine.
 
-## Repository map
+## The main idea
 
-| Path | Purpose |
-|---|---|
-| [`goal-designer-prompt.md`](goal-designer-prompt.md) | Interview protocol for deciding whether a task deserves a loop and producing an eight-field Goal Card |
-| [`brainstem\loop-orchestrator.md`](brainstem/loop-orchestrator.md) | Domain-neutral control contract for a continuous, bounded, file-backed run |
-| [`brainstem\templates\use-case-context.baseline.md`](brainstem/templates/use-case-context.baseline.md) | Optional per-run context for approved sources, runtime parameters, priorities, and tighter constraints |
-| [`brainstem\templates\use-case-run.baseline.md`](brainstem/templates/use-case-run.baseline.md) | Copyable schema for persisted run state, evidence, checks, backlog, and cycle decisions |
-| [`brainstem\lobster-pound-review-goal-card.md`](brainstem/lobster-pound-review-goal-card.md) | Worked Goal Card for a recurring community-insights task |
-| [`brainstem\lobster-pound-community-context.md`](brainstem/lobster-pound-community-context.md) | Active source locators and runtime values for the Lobster Pound example |
-
-## Core model
+An AI answer can look complete without being trustworthy. A loop adds a clear
+finish line and a way to repair failed checks.
 
 ```text
-Goal Designer -> Goal Card -> Loop Orchestrator -> Run state + task artifacts
+Design the goal -> Start the run -> Check the work -> Repair a gap -> Check again
 ```
 
-### Goal Card: what success means
+More cycles do not automatically mean more learning. Each cycle should make a
+visible change that helps the work pass.
 
-Every Goal Card defines eight fields:
+## Repository files
+
+| File | What you learn from it |
+|---|---|
+| [`goal-designer-prompt.md`](goal-designer-prompt.md) | How to challenge vague requests and produce a structured Goal Card |
+| [`lab-intent.md`](lab-intent.md) | The student learning goals, class flow, and teaching guardrails |
+| [`brainstem/loop-orchestrator.md`](brainstem/loop-orchestrator.md) | How a run selects work, checks progress, records state, and stops |
+| [`brainstem/templates/use-case-run.baseline.md`](brainstem/templates/use-case-run.baseline.md) | What the run records so you can inspect and resume it |
+| [`brainstem/templates/use-case-context.baseline.md`](brainstem/templates/use-case-context.baseline.md) | How to provide settings that may change from one run to another |
+| [`brainstem/lobster-pound-review-goal-card.md`](brainstem/lobster-pound-review-goal-card.md) | A worked Goal Card for a 30-day community review |
+| [`brainstem/lobster-pound-community-context.md`](brainstem/lobster-pound-community-context.md) | The approved paths, dates, sources, and limits for the worked example |
+
+## How the files work together
+
+```text
+Goal Designer
+    |
+    v
+Goal Card ---------> Runtime context
+    |                     |
+    +----------+----------+
+               |
+               v
+        Loop Orchestrator
+               |
+               v
+      Run file + task files
+```
+
+### Goal Card
+
+The Goal Card says what success means. It has eight sections:
 
 1. `OBJECTIVE`
 2. `OUTPUT`
@@ -39,109 +68,178 @@ Every Goal Card defines eight fields:
 7. `STAGES`
 8. `STOP-CAPS`
 
-The card is authoritative for task scope, acceptance, quality, and stopping behavior.
+### Runtime context
 
-### Orchestrator: how work proceeds
+The context file supplies values for one run, such as paths, dates, source names,
+and tighter limits. It may narrow the Goal Card. It may not weaken the Goal
+Card's finish line.
 
-The orchestrator applies this cycle:
+### Loop orchestrator
+
+The orchestrator controls the run:
 
 ```text
 Assess -> Act -> Verify -> Persist and Decide
 ```
 
-`START` authorizes the agent to continue through all necessary cycles in the same invocation. A cycle does not pause for approval unless the Goal Card requires escalation, a stop-cap applies, or the environment interrupts execution.
+Each cycle chooses one **target slice**: a small repair aimed at one main failed
+check or stage goal. The same repair may also improve other checks.
 
-### Runtime context: what varies by run
+### Run file
 
-Runtime context is optional. It can supply:
+The run file records what happened. It contains the current checks, target slice,
+backlog, child-agent activity, cycle history, progress, and stop decision.
 
-- concrete source locations and time windows;
-- parameter values explicitly left open by the Goal Card;
-- current priorities;
-- repository or path selections;
-- additional restrictions; and
-- tighter stop-caps.
+Chat history is not the official record. Another agent should be able to resume
+from the files.
 
-It cannot weaken, replace, or reinterpret the Goal Card.
+## Part 1: Design a Goal Card
 
-### Run file: what happened
+You can complete this part without access to the Lobster Pound sources.
 
-The run file is the resumable system of record. It contains:
+### Step 1: Open the Goal Designer
 
-- Goal Card and context fingerprints;
-- current stage and cycle;
-- acceptance-check results and evidence;
-- ordered backlog;
-- progress measures;
-- artifact paths;
-- one decision note per completed cycle; and
-- completion, stop, or interruption state.
+Open `goal-designer-prompt.md` and use its full contents as the instruction in an
+AI assistant.
 
-Conversation history is non-authoritative. Another agent should be able to resume from the files alone.
+### Step 2: Describe a recurring task
 
-## What makes a task loopable?
+Start with a real task or a simple example:
 
-The Goal Designer tests three ingredients:
+```text
+Review our weekly project updates and make a good summary.
+```
 
-| Ingredient | Requirement |
-|---|---|
-| Checkable finish line | Every completion criterion has a judgment-free pass/fail test |
-| Bounded sandbox | Read sources, write locations, exclusions, and prohibited actions are explicit |
-| Convergent task | A failed check identifies a bounded repair that can be performed and rechecked |
+The Goal Designer should challenge words such as "good," "complete," or
+"insightful." It should ask what visible evidence would prove that the result is
+ready.
 
-The outcome may be:
+### Step 3: Answer the short interview
 
-- **Loop it** when all three ingredients are present.
-- **Don't loop this** when the task is better expressed as one prompt.
-- **One-shot as described, loopable if upgraded** when a missing verification dimension could create convergence.
+The Goal Designer asks up to three questions at a time. Give exact answers when
+you can:
 
-One-cycle completion is valid. The purpose of the loop is verified completion, not manufacturing extra passes.
+- name the audience;
+- name the output file or result;
+- name required and optional sources;
+- explain what usually goes wrong;
+- set read, write, approval, and stop limits.
 
-## Lobster Pound runbook
+If you do not know a threshold, ask the designer to label a starting value as a
+`Pilot assumption`.
 
-This example runs from a durable OneDrive-backed working directory rather than from the repository checkout.
-In the paths below, `<OneDrive Root>` is the user's OneDrive root, such as
-`C:\Users\<user>\OneDrive - Microsoft`.
+### Step 4: Review the result
 
-### 1. Copy the runtime files
+The final response should contain:
 
-Create `<OneDrive Root>\AMA\brainstem\templates\`, then copy:
+1. a verdict on whether the task should use a loop;
+2. the most important wording improvements;
+3. a Goal Card with all eight sections;
+4. one example of a failed check, repair, and recheck;
+5. what the first run should teach you.
 
-| Repository source | OneDrive destination |
+The prompt returns the Goal Card in chat. Save it as a Markdown file if you want
+to run it.
+
+## Part 2: Run the Lobster Pound example
+
+This part uses files outside the repository. You need:
+
+- Copilot Cowork or another agent that can read and write local files;
+- approved access to the meeting documents in the configured knowledge folder;
+- optional access to the named Teams and SharePoint locations.
+
+The main evidence is the in-window meeting transcripts and AI meeting summaries
+under:
+
+```text
+C:\Users\bspender\OneDrive - Microsoft\AMA\knowledge
+```
+
+Meeting details, meeting chat, community chat, and SharePoint documents are
+optional supporting sources. The repository does not contain this content.
+
+The example reviews August 7 through September 5, 2026. September 6 is not
+included. Each primary `.docx` file must be directly under the knowledge folder,
+not in a child folder.
+
+### Step 1: Study the worked files
+
+Read:
+
+- `brainstem\lobster-pound-review-goal-card.md`;
+- `brainstem\lobster-pound-community-context.md`.
+
+Before changing anything, find:
+
+1. the source window;
+2. required and optional sources;
+3. the output location;
+4. the 14 finish-line checks;
+5. the cycle and stall limits.
+
+### Step 2: Update the local paths
+
+The worked files use paths for the current example owner. If you are running the
+lab elsewhere, replace those paths before you start.
+
+Replace every occurrence of the example owner's output and knowledge paths in
+both worked files. Also update optional source links if they differ in your
+environment.
+
+Search both files again after editing to confirm that no old local path remains.
+
+Do not point the output root at the source folder.
+
+### Step 3: Copy the runtime files
+
+Create:
+
+```text
+<OneDrive Root>\AMA\brainstem\templates\
+```
+
+These files are required to run the worked example:
+
+| Repository file | Destination |
 |---|---|
 | `brainstem\loop-orchestrator.md` | `<OneDrive Root>\AMA\brainstem\loop-orchestrator.md` |
 | `brainstem\lobster-pound-review-goal-card.md` | `<OneDrive Root>\AMA\brainstem\lobster-pound-review-goal-card.md` |
 | `brainstem\lobster-pound-community-context.md` | `<OneDrive Root>\AMA\brainstem\lobster-pound-community-context.md` |
-| `brainstem\templates\use-case-context.baseline.md` | `<OneDrive Root>\AMA\brainstem\templates\use-case-context.baseline.md` |
 | `brainstem\templates\use-case-run.baseline.md` | `<OneDrive Root>\AMA\brainstem\templates\use-case-run.baseline.md` |
 
-The resulting layout is:
+This file is a reference for designing a different runtime context. The worked
+example does not need it:
+
+| Repository file | Optional destination |
+|---|---|
+| `brainstem\templates\use-case-context.baseline.md` | `<OneDrive Root>\AMA\brainstem\templates\use-case-context.baseline.md` |
+
+`<OneDrive Root>` is usually similar to:
+
+```text
+C:\Users\<user>\OneDrive - Microsoft
+```
+
+### Step 4: Open the working folder
+
+Start Copilot Cowork with this folder:
 
 ```text
 <OneDrive Root>\AMA\brainstem\
-|-- loop-orchestrator.md
-|-- lobster-pound-review-goal-card.md
-|-- lobster-pound-community-context.md
-`-- templates\
-    |-- use-case-context.baseline.md
-    `-- use-case-run.baseline.md
 ```
 
-The active context writes generated artifacts beneath
-`<OneDrive Root>\AMA\brainstem\insights\lobster-pound\`; it does not write results back to this repository.
+### Step 5: Load the instructions
 
-### 2. Load the contracts
-
-Start an AI session with `<OneDrive Root>\AMA\brainstem\` as its working directory. Send:
+Send:
 
 ```text
-Read @loop-orchestrator.md, @lobster-pound-review-goal-card.md, @lobster-pound-community-context.md, and @templates/use-case-context.baseline.md, then wait for further instructions.
+Read @lobster-pound-review-goal-card.md and @lobster-pound-community-context.md to be orchestrated by @loop-orchestrator.md and then wait for more instructions.
 ```
 
-This first instruction loads the control contract, Goal Card, active runtime context, and context schema without
-starting work.
+This loads the files. It does not start the run.
 
-### 3. Start or resume the loop
+### Step 6: Start the loop
 
 Send:
 
@@ -149,80 +247,147 @@ Send:
 START goal=lobster-pound-review-goal-card.md context=lobster-pound-community-context.md
 ```
 
-The orchestrator creates or resumes a run and continues until:
+The agent creates or resumes a run. It continues until:
 
 - every `DONE WHEN` check passes;
-- a Goal Card stop-cap applies; or
-- the execution environment forces an interruption.
+- a stop limit applies; or
+- the environment interrupts the run.
 
-Because the Goal Card declares an output root and run-file location, the omitted `run` argument resolves beneath
-`<OneDrive Root>\AMA\brainstem\insights\lobster-pound\runs\`.
+Send `START` once. Do not prompt the agent again between cycles unless it reports
+an interruption or asks for a decision required by the Goal Card.
 
-### 4. Inspect persisted status
+### Step 7: Watch the run
 
-Read state without performing work:
+Cowork should show short milestone messages followed by:
 
 ```text
-STATUS [run=<run-file-path>]
+[USE-CASE LOOP] run=<run-id> | cycle=<n>/<max> | stage=<goal-stage> | checks=<passed>/<total> | stall=<n>/<cap> | status=<IN_PROGRESS|COMPLETE|STOPPED>
 ```
 
-`START` and `STATUS` are ordinary instructions, not slash commands.
+You may see the same line more than once. Repeated lines show that the process is
+still alive. They do not prove that the work improved. Use the run file's check
+results, cycle changes, and recorded repair results to judge progress.
 
-## Designing another Goal Card
+The example keeps a 10-cycle limit. Each cycle should choose one main repair
+without turning the first cycle into one large pass.
 
-Open [`goal-designer-prompt.md`](goal-designer-prompt.md) in an AI assistant and use it as the instruction. The
-Goal Designer conducts up to three interview rounds, challenges vague or judgment-laden criteria, and returns
-either a Goal Card or a reason not to loop the task.
+The parent agent may use two or three child agents when a target slice has clear,
+separate parts. The parent remains the only writer of the official run and task
+files.
 
-Use [`brainstem\templates\use-case-context.baseline.md`](brainstem/templates/use-case-context.baseline.md) when a Goal Card needs
-run-specific source locations, parameters, or tighter constraints. Runtime context is optional and cannot weaken
-the Goal Card.
+### Step 8: Inspect the output
 
-## Resume and interruption behavior
+The context writes results under:
 
-If an environment limit interrupts execution, the agent persists completed work, leaves the run `In Progress`, records the interruption reason, and reports the exact `START` instruction needed to resume.
+```text
+<OneDrive Root>\AMA\brainstem\insights\lobster-pound\
+```
 
-On resume, the agent reloads the Goal Card, optional context, run file, artifacts, and required inputs. If the Goal Card changed during the run, the orchestrator stops rather than mixing acceptance policies.
+Start with the run file in `runs\`. Inspect:
 
-## Progress and stopping
+1. **Loop Preflight** — Was the goal safe, checkable, and possible within the
+   cycle limit?
+2. **DONE WHEN Results** — Which checks passed or failed, and what evidence was
+   recorded?
+3. **Slice and Cycle History** — Why was each repair chosen, and what changed?
+4. **Backlog Decision History** — Why did remaining work move up or down?
+5. **Child Activity Log** — Which work was delegated and accepted?
+6. **Stop Reason and final cycle decision** — Why did the run complete or stop?
+7. **Persisted Progress Line** — What was the final cycle, stage, check count,
+   stall count, and status?
 
-Progress must be a persisted, checkable state change, such as:
+Inspect the files that the run created. A completed run should include the final
+report plus the digests, theme ledger, theme files, glossary, taxonomy, and open
+questions named by the Goal Card. A stopped or interrupted run may contain only
+part of that set. Do not treat a missing final report as a separate error when
+the run did not complete.
+
+### Step 9: Read status without doing work
+
+To read the only active run, send:
+
+```text
+STATUS
+```
+
+To name a run file, replace the example path with the real path and send:
+
+```text
+STATUS run=C:\path\to\runs\20260907-090000-lobster-pound.md
+```
+
+Do not type square brackets or placeholder text. `START` and `STATUS` are normal
+instructions, not slash commands.
+
+### Step 10: Resume an interrupted run
+
+If the environment interrupts the run, use the exact `START` instruction shown
+in the interruption response. The agent reloads the run file and continues the
+unfinished target slice.
+
+If the Goal Card changed after the run began, the orchestrator stops instead of
+mixing two different finish lines.
+
+## Part 3: Explain what the loop learned
+
+Use the run file to answer:
+
+1. What was the first failed check?
+2. Why did the agent choose its first target slice?
+3. What visible state changed?
+4. Which other checks improved from the same work?
+5. Why was the next backlog item chosen?
+6. Did child agents divide real work, or only create more activity?
+7. Why did the run complete, stop, or get interrupted?
+
+If you cannot answer these questions from the run file, the run did not make its
+learning path clear enough.
+
+## Common problems
+
+### The run says `don't loop this`
+
+One of the starting checks failed. Read the evidence in **Loop Preflight**. Make
+the finish line, repair path, boundaries, or cycle plan clearer before trying
+again.
+
+### The run stops before completion
+
+A stopped run is not automatically a failure. Check the stop reason, failed
+checks, and smallest next action. An honest incomplete result is better than an
+unsupported success.
+
+### No child agents appear
+
+Child agents are optional. The agent should use them only when a target slice
+can be divided into separate, useful parts.
+
+### A source cannot be read
+
+Required source failures block successful completion. Optional source failures
+should be recorded as gaps without being treated as proof that nothing happened.
+
+### The output path cannot be written
+
+The Goal Card requires a create, read, and delete test before analysis. Correct
+the path or permissions, then start again.
+
+## What counts as progress
+
+Progress is a recorded change such as:
 
 - a failed check passing;
-- measurable distance to a threshold decreasing;
-- a required artifact appearing;
-- a stage exit condition passing; or
-- a blocking backlog item being resolved.
+- fewer missing sources;
+- fewer unsupported claims;
+- a required file appearing;
+- a conflict or gap being resolved.
 
-More prose, tool calls, or cycles do not count as progress.
-
-Successful completion requires every `DONE WHEN` check to pass. Reaching a fixed point with failed checks is a stall, not success. A stopped run is a valid and useful result when it reports the failed checks, supporting evidence, and smallest next action.
-
-## Worked example: community insights
-
-[`brainstem\lobster-pound-review-goal-card.md`](brainstem/lobster-pound-review-goal-card.md) models a recurring 30-day synthesis of a Teams community. It demonstrates:
-
-- complete source accounting within an approved sandbox;
-- reusable daily evidence condensation;
-- weekly theme evolution rather than disconnected summaries;
-- original-source citations;
-- duplicate, freshness, contradiction, and continuity checks;
-- incremental reuse with a trailing reinspection window; and
-- explicit privacy, access, and publication boundaries.
-
-The example is a task contract, not bundled data or a simulated integration. Running it requires an execution environment with authorized access to the sources named by the card. The repository does not contain Teams messages, transcripts, credentials, or copied source bodies.
-
-## Design principles
-
-- Files, not chat history, hold authoritative state.
-- Goal Cards define acceptance; context only configures a run.
-- Mechanical checks must reject cheap, superficially compliant answers.
-- Discovery-dependent checks belong only in tasks that genuinely require retrieval or verification.
-- Expensive operations use total-run budgets rather than artificial per-cycle rationing.
-- Failed checks should produce repairable backlog items.
-- Durable artifacts should be reused across recurring runs when their source checkpoints remain valid.
-- Safety, access boundaries, and escalation authority remain explicit.
+More words, tool calls, child agents, or cycles are not progress by themselves.
 
 ## Scope
 
-This is an experimental lab for reasoning about autonomous task loops. It is not a workflow engine, scheduler, Teams connector, or replacement for platform-native orchestration. Its value is the visible contract: the task, evidence, progress, and stopping logic can all be inspected and revised directly.
+This repository is an educational lab. It is not a scheduler, Teams connector,
+SharePoint connector, or production workflow engine.
+
+Its purpose is to make the goal, evidence, repairs, progress, and stop decision
+easy to inspect and improve.

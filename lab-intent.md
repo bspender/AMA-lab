@@ -1,89 +1,200 @@
-# Lab Handoff Summary
+# Loop Engineering Lab: Learning Intent
 
-## Concept
+## Purpose
 
-A 90-minute lab that teaches senior technical practitioners how to engineer reliable AI-enabled loops.
+This 90-minute lab teaches students how to give an AI agent a clear goal, let it
+work through problems, and know when the work is truly done.
 
-The experience contrasts **outcome-first, evidence-bounded iteration** with “prompt-and-hope” approaches that rely on model capability, excessive context, or a single plausible response. Participants build a workflow that evaluates its own progress, responds to feedback, preserves uncertainty, and stops only when explicit acceptance conditions are satisfied.
+The main lesson is simple:
 
-## Learning North Star
+> Repeating a prompt is not the same as learning.
 
-Participants should leave able to design a loop that:
+A useful loop checks its work. When a check fails, the agent chooses a small
+repair, makes the change, checks again, and records what happened.
 
-- Defines a checkable outcome before execution.
-- Operates within bounded inputs and constraints.
-- Makes state, progress, decisions, and gaps visible.
-- Uses deterministic checks where appropriate.
-- Revises work across meaningful passes.
-- Detects regressions and unsupported conclusions.
-- Stops for an evidence-based reason.
+## What students should learn
 
-The key lesson is that **iteration count is not the same as learning**. Later passes should be forced by new evidence, evaluator feedback, or constraints that invalidate an earlier plausible answer—not merely by increasing work volume.
+By the end of the lab, students should be able to:
 
-## North-Star Demonstration
+1. turn a vague request into a clear Goal Card;
+2. write finish-line checks that produce a recorded pass or fail result;
+3. set clear limits on sources, files, actions, cycles, and cost;
+4. explain why a task should use a loop—or why one prompt is enough;
+5. follow how one small repair changes the work from one cycle to the next;
+6. tell the difference between real progress and more activity;
+7. inspect the final run history and explain why the agent stopped.
 
-A strong demonstration is a bounded research and sensemaking workflow. It processes a fictional collaboration history to:
+Students do not need to build a workflow engine. They learn by reading and
+changing plain Markdown files.
 
-- Separate material, duplicate, and low-signal content.
-- Produce periodic summaries.
-- Maintain themes and their evolution over time.
-- Develop a glossary and taxonomy.
-- Identify trends and meaningful state changes.
-- Preserve unanswered questions and evidence gaps.
-- Produce a traceable synthesis without overstating conclusions.
+## The learning path
 
-The same mechanics can transfer to architecture decisions, remediation, recommendation auditing, model routing, memory policy, governance, observability, discovery, and cost allocation.
+### 1. Start with a vague task
 
-## Design Principles
+Students begin with a request such as:
 
-**Make iteration consequential.** Each stage should change the problem state and require revision.
+`Review this community and make a good report.`
 
-**Separate checking from judgment.** Mechanical checks can prove completeness and traceability; they do not necessarily prove semantic correctness.
+They identify what is missing:
 
-**Design against cheap passes.** The evaluator must reject tactics such as deleting required content, marking everything unknown, selecting every option, storing nothing, or degrading outcomes merely to reduce cost.
+- Who is the report for?
+- What files should be created?
+- Which sources may be used?
+- What does "good" mean?
+- How will the agent know it is done?
+- What should happen when evidence is missing?
 
-**Expose the loop.** Inputs, current conclusions, evidence links, feedback, regressions, open questions, and stop decisions should remain visible.
+### 2. Design the goal
 
-**Keep content subordinate to learning.** Use a small synthetic corpus so processing does not crowd out loop design and refinement.
+Students use `goal-designer-prompt.md`. The Goal Designer challenges vague words,
+asks short questions, and returns a Goal Card with eight parts:
 
-## Potential Modalities
+1. `OBJECTIVE`
+2. `OUTPUT`
+3. `DONE WHEN`
+4. `QUALITY`
+5. `CONTEXT`
+6. `CONSTRAINTS`
+7. `STAGES`
+8. `STOP-CAPS`
 
-| Modality | Best use | Primary constraint |
-|---|---|---|
-| Facilitator-led demo | Clearly demonstrate the difference between generation and engineered iteration | Limited participant practice |
-| Guided hands-on lab | Build practical skill within a controlled 90-minute experience | Requires tight scope and predictable branching |
-| Self-paced repository lab | Enable repeatable, independent learning | Needs excellent scaffolding and recovery guidance |
-| Safe bring-your-own capstone | Demonstrate transfer to authentic work | Content variability, privacy, and unpredictable duration |
-| Short scenario variants | Show that the method generalizes across technical domains | Must preserve the loop mechanics rather than become prompt exercises |
+The Goal Designer may also recommend using one prompt instead of a loop. That is
+a valid result.
 
-## Minimum Viable Demo
+### 3. Study a worked Goal Card
 
-1. Provide a bounded fictional evidence set.
-2. Define the required output and explicit acceptance contract.
-3. Produce an initially plausible result.
-4. Evaluate completeness, traceability, duplicates, gaps, and prohibited shortcuts.
-5. Release new evidence or constraints that invalidate part of the result.
-6. Revise while preserving change history and unresolved issues.
-7. Apply a semantic or adversarial review.
-8. Stop only when checks pass and remaining uncertainty is explicit.
+Students inspect `brainstem\lobster-pound-review-goal-card.md`.
 
-## Indicators of Success
+The example asks the agent to review a 30-day window of Lobster Pound community
+meetings. Meeting transcripts and summaries are the main evidence. Meeting
+details, Teams conversations, and SharePoint documents are optional supporting
+sources.
 
-- Participants distinguish meaningful iteration from repeated generation.
-- Each cycle visibly changes the artifact or understanding.
-- Material claims are supported, qualified, or unresolved.
-- Mechanical checks catch omissions and gaming.
-- Semantic review catches plausible but incorrect conclusions.
-- The stop decision is explicit and evidence-based.
-- Participants can transfer the pattern to another technical problem.
+Students should notice that the card separates:
 
-## Open Design Decisions
+- the result from the work steps;
+- required sources from optional sources;
+- finish-line checks from quality guidance;
+- successful completion from an incomplete but honest stop.
 
-The next design phase should determine:
+### 4. See what changes for one run
 
-- The smallest corpus that still creates meaningful synthesis.
-- How later evidence is staged without unnecessary tooling.
-- Which checks are deterministic versus judgment-based.
-- How adversarial claim validation is performed.
-- Which modality is the primary experience.
-- How much workshop time is reserved for inspection, revision, and reflection.
+Students inspect `brainstem\lobster-pound-community-context.md`.
+
+The context file supplies exact paths, dates, source names, and run settings. It
+may narrow the Goal Card, but it may not weaken the Goal Card's finish line.
+
+This teaches a useful split:
+
+- the Goal Card says what success means;
+- the context file says what is true for this run.
+
+### 5. Run the loop
+
+Students use `brainstem\loop-orchestrator.md` to start the worked example.
+
+Each cycle:
+
+1. checks the current state;
+2. chooses one small target slice;
+3. performs that slice;
+4. checks the affected finish-line items;
+5. records the result and chooses whether to continue.
+
+One slice has one main target. It may also improve other checks when the same
+work honestly affects them.
+
+The 10-cycle limit is intentional. It pushes the agent to choose useful slices
+without turning the first cycle into one large, hidden pass.
+
+### 6. Watch the run
+
+During the run, students see short milestone messages and a repeated status
+line. Repeated lines show that the process is still alive. They do not prove
+that the work improved.
+
+Students use the final run file—not console activity—to decide whether the loop
+made progress.
+
+The agent may use two or three child agents when a slice can be divided into
+clear, separate parts. The parent agent remains responsible for the final files
+and run history.
+
+### 7. Inspect what the loop learned
+
+After the run, students inspect the run file created from
+`brainstem\templates\use-case-run.baseline.md`.
+
+The most important sections are:
+
+- **DONE WHEN Results:** Which checks passed, failed, and why?
+- **Slice and Cycle History:** What did each cycle try, and what changed?
+- **Backlog Decision History:** Why did the next problem move up or down?
+- **Child Activity Log:** What work was delegated, and what was accepted?
+- **Stop Reason and final cycle decision:** Why did the run complete or stop?
+- **Persisted Progress Line:** What was the final state?
+
+The history should make the path to the result easy to explain. If the file only
+shows that more work happened, the loop did not demonstrate learning.
+
+## What counts as progress
+
+Progress is a visible change such as:
+
+- a failed finish-line check now passes;
+- a missing source is found or clearly recorded as unavailable;
+- an unsupported claim is fixed or removed;
+- a conflict is resolved or clearly preserved;
+- a required file is created;
+- an open gap is closed.
+
+These do not count as progress by themselves:
+
+- more words;
+- more tool calls;
+- more child agents;
+- more cycles;
+- a confident answer without stronger evidence.
+
+## Suggested 90-minute flow
+
+| Time | Student activity |
+|---:|---|
+| 10 minutes | Compare a vague request with a checkable goal |
+| 20 minutes | Use the Goal Designer and review its pushback |
+| 15 minutes | Read the worked Goal Card and runtime context |
+| 30 minutes | Start the loop and watch its target slices |
+| 15 minutes | Inspect the run history and discuss what changed |
+
+If the live run takes longer, the instructor may provide a completed run file
+separately for the final inspection.
+
+## Signs the lab worked
+
+The lab is successful when students can:
+
+- explain why one check failed;
+- name the repair chosen for the next slice;
+- point to evidence that the repair helped;
+- explain why another tempting action was left for later;
+- identify a task that does not need a loop;
+- describe the reason the example completed, stopped, or was interrupted.
+
+## Teaching guardrails
+
+- Keep the source set small enough that students can focus on the loop.
+- Do not create extra cycles just for the demonstration.
+- Do not treat every quality concern as a simple machine check.
+- Do not hide missing evidence or disagreement.
+- Do not use child agents when the work cannot be divided safely.
+- Treat a clear, incomplete stop as better than unsupported success.
+
+## Current lab boundary
+
+The repository contains the instructions and templates. It does not contain the
+Lobster Pound source documents or Microsoft 365 content.
+
+Running the worked example requires approved access to the paths and services
+listed in `brainstem\lobster-pound-community-context.md`. Students without that
+access can still complete the Goal Design portion. They can inspect a completed
+run only when the instructor supplies one separately.
