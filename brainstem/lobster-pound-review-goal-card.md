@@ -2,7 +2,7 @@
 
 ### OBJECTIVE
 
-Produce a trustworthy, meeting-centered understanding of a frozen 30-day **MCAPS Lobster Pound Community** evidence window for the user: what happened, what recurred or changed, and what can be learned—using meeting transcripts and summaries as primary evidence while preserving week-to-week theme evolution, evidence provenance, and optional-source limitations.
+Produce a trustworthy, meeting-centered understanding of a frozen 30-day **MCAPS Lobster Pound Community** evidence window for the user: what happened, what recurred or changed, and what can be learned—using Microsoft Graph meeting transcripts and locally captured Copilot meeting summaries as primary evidence while preserving week-to-week theme evolution, evidence provenance, and optional-source limitations.
 
 ### OUTPUT
 
@@ -32,8 +32,8 @@ Persist source IDs, timestamps, and links—not copied source bodies.
 
 All checks pass:
 
-1. **Coverage:** Every in-window transcript and meeting summary in the approved knowledge folder is inventoried and inspected. Each in-window meeting occurrence has its available transcript and summary paired by occurrence date; a missing counterpart, unreadable document, or fingerprint mismatch produces an incomplete handback, not success. Attempt the approved meeting-series lookup and reconcile discovered in-window occurrences against those pairs. If access fails, record the attempt and describe coverage as corpus-only rather than upstream-complete. Optional-source coverage is measured and reported separately.
-2. **Condensation:** Every primary document is classified in the source manifest as material evidence, duplicate, or no material signal and assigned to exactly one meeting-occurrence date. Each active meeting date has an uncapped occurrence record and one capped digest combining its transcript and summary plus any inspected optional evidence relevant to that occurrence. The digest states how many material records it includes and omits, identifies materially omitted categories, and links to the occurrence record.
+1. **Coverage:** Every in-window meeting occurrence is reconciled against the meeting series and inspected using its Microsoft Graph transcript when available, otherwise its approved local transcript fallback, plus its local Copilot meeting summary. Each occurrence records the chosen transcript source and any rejected or unavailable alternative. A missing summary, no available transcript, unreadable required source, or fingerprint mismatch produces an incomplete handback, not success. A degraded summary capture opens a visible coverage gap but does not stop preflight or prevent analysis of the available transcript. Optional-source coverage is measured and reported separately.
+2. **Condensation:** Every required primary source is classified in the source manifest as material evidence, duplicate, fallback, degraded capture, or no material signal and assigned to exactly one meeting-occurrence date. Each active meeting date has an uncapped occurrence record and one capped digest combining its chosen transcript and local summary plus any inspected optional evidence relevant to that occurrence. The digest states how many material records it includes and omits, identifies materially omitted categories, and links to the occurrence record.
 3. **Evidence:** Every factual claim, latest update, and theme-state change cites an inspected source body using source ID/link and timestamp.
 4. **Recurrence:** A “recurring” theme has non-duplicate evidence from at least two distinct weeks and two independent source items.
 5. **Freshness:** The report states the frozen source window, review timestamp, newest primary occurrence, and optional-source retrieval times when applicable. No claim is described as “current” unless the supporting source was verified within 24 hours of run time; otherwise findings are qualified by their evidence boundary.
@@ -43,11 +43,11 @@ All checks pass:
 9. **Evolution:** Every theme change records prior state, new state, effective week, evidence IDs, and rationale.
 10. **Gaps:** Every recorded gap has an attempted remedy and result.
 11. **Privacy:** Zero private-chat, other-channel, attachment, or unapproved-source content appears in persisted artifacts.
-12. **Integrity:** Every required primary file is readable, fingerprinted, uniquely inventoried, paired by meeting-occurrence date, and records its extraction method. Each timecoded transcript records its first and last timecodes and observed gaps greater than five minutes; transcripts without timecodes record that limitation. Absence-shaped claims are qualified when transcript gaps exist. Ambiguous dates, duplicate candidates, and conflicting versions remain quarantined until resolved.
-13. **Continuity:** Reuse existing digests when their primary and optional source checkpoints are unchanged. When the knowledge corpus changes, reinspect new or changed documents plus the trailing seven days, update only affected digests, and record each change. The run reconciles changes against the prior ledger and immutable prior report.
+12. **Integrity:** Every required primary source is readable, fingerprinted, uniquely inventoried, paired by meeting-occurrence date, and records its retrieval or extraction method. Graph transcripts are selected by occurrence date rather than list order. Local transcript fallbacks record why Graph retrieval failed and, when both versions exist, their word counts and measured ratio. Transcript gaps use cue end-to-next-start coverage rather than start-time differences. Every summary records its capture-quality result before UI chrome is removed. Ambiguous dates, duplicate candidates, and conflicting versions remain quarantined until resolved.
+13. **Continuity:** After resolving the writable output root and before changing state, resolve the latest valid prior `theme-ledger.md`, `commitments.md`, and `glossary.md` from the approved continuity search roots. Record the prior run and fingerprints, preserve stable IDs, open commitments, and unresolved states contained in those three files, and carry the selected state into the resolved output root before updating it. Never infer commitment completion or overwrite prior theme or glossary meaning without cited new evidence. Reuse existing digests when source checkpoints are unchanged; otherwise reinspect affected documents plus the trailing seven days and record each change. Prior reports remain immutable. Cross-root continuity for theme detail files, taxonomy, open questions, digests, and reports is outside this pilot and must be disclosed rather than inferred.
 14. **Structure:** The report answers all three objective questions, labels primary analytical coverage separately from optional enrichment coverage, gives every authorized optional source an explicit attempted/not-attempted disposition with result or reason, records every check as pass/fail with evidence, and names the resolved output root plus the primary-root failure reason when fallback was used.
 15. **Commitments:** Every explicit owner-attributed follow-up task found in an inspected meeting summary is recorded once in `commitments.md` with a stable ID, owner, raised date, source ID, related theme when known, and status. A commitment is marked done, superseded, or lapsed only with cited evidence; otherwise it remains open.
-16. **Live logging:** The event sidecar contains verified, sequential `run_initialized`, `cycle_started`, validation, and `cycle_ended` events written during execution. Every completed cycle and every validation failure or pass produces a matching sidecar event, and the Markdown cycle summary is derived from those events. Missing, reordered, or reconstructed events fail this check.
+16. **Live logging:** The event sidecar contains verified, sequential `run_initialized`, `cycle_started`, validation, and `cycle_ended` events written during execution. Required-source lookup results, lookup failures, tool failures that change the plan, transcript fallbacks, and failed summary capture-quality checks are recorded before the fallback or repair occurs. Every completed cycle and every validation failure or pass produces a matching sidecar event, and the Markdown cycle summary is derived from those events. Missing, reordered, or reconstructed events fail this check.
 
 These thresholds are **pilot assumptions** to recalibrate after the first run.
 
@@ -63,22 +63,25 @@ These thresholds are **pilot assumptions** to recalibrate after the first run.
 - Use minimal necessary excerpts and avoid unnecessary identity exposure.
 - Meeting-date digests do not replace original-source citations.
 - Meeting chat alone cannot establish recurrence, consensus, or momentum.
+- Prefer the Graph transcript for meeting speech. A local transcript is evidence only when Graph retrieval for that occurrence fails.
+- Treat the local Copilot meeting summary as required, irreplaceable summary evidence. Mark a collapsed or unusually thin capture as degraded, disclose the limitation, and continue with available transcript evidence.
 - Material disagreement or minority signals must not be silently dropped.
 - Occurrence records preserve material attribution and specifics even when the digest omits them.
 - Digest omissions must be visible and addressable; a digest never replaces its occurrence record.
 - Do not infer that a commitment is complete from silence or age.
-- State “Primary knowledge corpus processing complete; optional enrichment coverage: <status>” in the report and run file.
+- State “Primary meeting evidence processing complete; optional enrichment coverage: <status>” in the report and run file.
 - Never interpret a missing source record as evidence that no activity occurred.
 
 ### CONTEXT
 
 Read only:
 
-- All in-window meeting transcripts and meeting summaries under `C:\Users\bspender\OneDrive - Microsoft\AMA\knowledge`
-- Approved metadata or details for the weekly meeting series named **MCAPS Lobster Pound | Show & Tell**; attempt required for occurrence reconciliation
+- All in-window meeting transcripts for **MCAPS Lobster Pound | Show & Tell** available from the approved Microsoft Graph meeting-transcript store; this is the preferred primary transcript source
+- All in-window local transcripts and Copilot meeting summaries under `C:\Users\bspender\OneDrive - Microsoft\AMA\knowledge`; summaries are required primary evidence and local transcripts are fallback evidence
+- Approved metadata or details for the weekly meeting series named **MCAPS Lobster Pound | Show & Tell**; required for occurrence reconciliation and Graph transcript retrieval
 - Optional read-only inspection of the approved **Lobster Pound** Teams channel and meeting-occurrence conversation
 - Optional read-only inspection of up to 50 documents from the approved community SharePoint folder across the full run
-- Existing state and prior reports under `C:\Users\bspender\OneDrive - Microsoft\AMA\brainstem\insights\lobster-pound\`
+- Existing theme, commitment, and glossary state under the approved continuity search roots declared by the runtime context
 
 ### CONSTRAINTS
 
@@ -92,15 +95,16 @@ Read only:
 - Treat the knowledge corpus and optional sources as read-only: do not rewrite, normalize, reorder, or silently repair source evidence.
 - Because this run reads labeled `.docx` sources, before broad analysis read one representative required source, append and verify a sidecar event, then update and reread the actual run file. Stop with an `unsafe persistence` incomplete handback only if both the primary root and any declared fallback root fail.
 - Keep the `.events.jsonl` sidecar in the same resolved `runs\` folder as its Markdown run file. Never rewrite prior event lines.
+- Do not access Graph recordings or AI insights. Video recordings are outside this review, and Copilot meeting summaries come from the approved knowledge folder.
 
 ### STAGES
 
-1. **Inventory evidence:** Freeze the 30-day window, perform the run-start persistence test, validate and fingerprint all in-window primary documents, pair them by meeting occurrence, and build the run source manifest.
-2. **Condense and reconcile:** Create uncapped occurrence records, capped meeting-date digests with omission summaries, and the commitment register; then reconcile evidence by week into the evolving ledger.
+1. **Inventory evidence:** Freeze the 30-day window, perform the run-start persistence test, reconcile meeting occurrences, retrieve and fingerprint Graph transcripts, validate local summaries and transcript fallbacks, resolve prior continuity state, and build the run source manifest.
+2. **Condense and reconcile:** Apply one consistent extraction contract to every occurrence, create uncapped occurrence records, capped meeting-date digests with omission summaries, and the commitment register; then reconcile evidence by week into the evolving ledger.
 3. **Verify and repair:** Check coverage, provenance, recurrence, freshness, contradictions, privacy, gaps, and continuity; repair failures.
 4. **Persist understanding:** Update permitted state files and write the period report only when every completion check passes.
 
-**Progress measures:** passed checks, missing required sources, unsupported claims, unrecorded commitments, missing live events, unresolved duplicates, blocking contradictions, unattempted gaps, and themes with fully traceable state changes.
+**Progress measures:** passed checks, missing required sources, Graph transcript retrievals and fallbacks, degraded summaries, unsupported claims, unrecorded commitments, carried-forward state, missing live events, unresolved duplicates, blocking contradictions, unattempted gaps, and themes with fully traceable state changes.
 
 ### STOP-CAPS
 

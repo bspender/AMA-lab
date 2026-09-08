@@ -66,9 +66,9 @@ a valid result.
 Students inspect `brainstem\lobster-pound-review-goal-card.md`.
 
 The example asks the agent to review a 30-day window of Lobster Pound community
-meetings. Meeting transcripts and summaries are the main evidence. Meeting
-details, Teams conversations, and SharePoint documents are optional supporting
-sources.
+meetings. Graph meeting transcripts and local Copilot meeting summaries are the
+main evidence; local transcript copies are fallbacks. Teams conversations and
+SharePoint documents are optional supporting sources.
 
 Students should notice that the card separates:
 
@@ -116,9 +116,10 @@ that the work improved.
 Students use the final run file—not console activity—to decide whether the loop
 made progress.
 
-The agent may use two or three child agents when a slice can be divided into
-clear, separate parts. The parent agent remains responsible for the final files
-and run history.
+The worked context uses two or three child agents to cover all meeting-date
+extraction partitions with one shared contract. The parent agent validates and
+integrates the results and remains responsible for the final files and run
+history.
 
 ### 7. Inspect what the loop learned
 
@@ -127,7 +128,8 @@ After the run, students inspect the run file created from
 
 The most important sections are:
 
-- **Work Event Log:** Does the JSONL sidecar contain sequential events for failures and retries as they happened?
+- **Work Event Log:** Does the JSONL sidecar contain sequential events for source lookups, failures, fallbacks, and retries as they happened?
+- **Continuity:** Did the run identify and preserve readable prior themes, commitments, and glossary entries before adding new evidence, while disclosing session-fallback limits?
 - **DONE WHEN Results:** Which checks passed, failed, and why?
 - **Slice and Cycle History:** What did each cycle try, and what changed?
 - **Backlog Decision History:** Why did the next problem move up or down?

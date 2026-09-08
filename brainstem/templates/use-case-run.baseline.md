@@ -21,6 +21,9 @@
 | Output Root Resolution | |
 | Resolved Output Root | |
 | Primary Root Failure | |
+| Prior Run | none |
+| Continuity Sources | none |
+| Continuity Fingerprints | none |
 | Event Log Path | |
 | Event Count | 0 |
 | Last Event Sequence | 0 |

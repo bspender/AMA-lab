@@ -122,6 +122,12 @@ or the fallback test also fails, set the run to `Stopped` with reason `unsafe pe
 handback defined by the Goal Card. This is an environment failure, not a `don't loop this` verdict. Do not create a
 separate probe file and do not require deletion support.
 
+After resolving the writable output root, and before changing any cross-run state named by the Goal Card, inspect
+only its approved continuity roots. When valid prior state is available, record its run ID, paths, and fingerprints,
+copy the selected state into the resolved output root, reread it, then append and verify `continuity_selected`. When
+no prior state is readable, record `Prior Run: none` and the continuity limitation. Never merge conflicting state
+sets or imply that an unreadable session-local fallback is durable across sessions.
+
 ## Convergence and target slices
 
 The unit of iteration is one **target slice**, not a broad pass over the artifact. A target slice is the smallest
@@ -164,6 +170,7 @@ Every event line contains:
 - `cycle`, `event`, and `slice`;
 - `check` or `artifact` when applicable;
 - `attempt`, `observed`, and `next` for validation failures;
+- `operation`, `source`, `error`, and `fallback` for failed source or tool operations;
 - `checks_passing`, `stall`, and `decision` when applicable.
 
 Before each append, read the last line and next sequence number. After appending, reread the last line and verify
@@ -183,12 +190,20 @@ Required durable checkpoints are:
 - `validation_failed`, before a retry, with the saved artifact or candidate, failed rule, observed value, and next
   repair;
 - `validation_passed`, after validating the reread saved artifact;
+- `source_lookup_completed`, when a required lookup establishes the evidence scope or selected source;
+- `source_lookup_failed`, before using a fallback for a required source;
+- `tool_failed`, when a non-source tool error changes the next action or evidence coverage;
+- `fallback_selected`, after verifying the replacement source or path;
+- `capture_quality_failed`, before continuing with a degraded required source;
+- `continuity_selected`, after verifying prior state selected for carry-forward;
 - `cycle_ended`, with the observed delta and continue, complete, or stop decision;
 - `interrupted` or `stopped`, when applicable.
 
-Record tool errors, timeouts, and permission failures when they change the next action. Multiple validation attempts
-belong inside one target slice unless they change the primary target. Derive the Slice and Cycle History from the
-sidecar at each cycle boundary; do not remember or reconstruct it separately.
+Record required-source retrieval errors that trigger fallback as `source_lookup_failed`. Use `tool_failed` for
+non-source tool errors that change the next action or evidence coverage. Record timeouts, permission failures, and
+quality-gate failures before they change the next action. Record the selected fallback only after it is read and
+verified. Multiple validation attempts belong inside one target slice unless they change the primary target. Derive
+the Slice and Cycle History from the sidecar at each cycle boundary; do not remember or reconstruct it separately.
 
 ## Child-agent execution
 
@@ -233,7 +248,8 @@ On a new run:
 2. record the Goal Card path, version or fingerprint, and resolved stop-caps;
 3. record the context path and current version or fingerprint, or `none`;
 4. set `Status: In Progress`, `Cycle: 0`, and `Stall Count: 0`;
-5. append and verify `run_initialized` in the event log, then save and reread the run file before Cycle 1.
+5. append and verify `run_initialized` in the event log;
+6. save and reread the run file before Cycle 1.
 
 On a resumed run, restore all state from the run file and event log, append and verify `run_resumed`, then save and
 reread the run file before continuing. Conversation history is non-authoritative.
@@ -328,6 +344,7 @@ Every run file must contain these sections. `templates\use-case-run.baseline.md`
 - current Goal Card stage;
 - current target slice and its expected delta;
 - output-root resolution and, when fallback is used, the primary-root failure reason;
+- prior run and continuity-source paths or `none`, with source fingerprints;
 - child-agent limits, launch count, and integration state;
 - artifact paths;
 - interruption reason, when applicable;

@@ -146,22 +146,25 @@ to run it.
 This part uses files outside the repository. You need:
 
 - Copilot Cowork or another agent that can read and write local files;
-- approved access to the meeting documents in the configured knowledge folder;
+- approved access to Microsoft Graph meeting transcripts for the named meeting series;
+- approved access to the Copilot meeting summaries in the configured knowledge folder;
 - optional access to the named Teams and SharePoint locations.
 
-The main evidence is the in-window meeting transcripts and AI meeting summaries
-under:
+The preferred transcript evidence comes from Microsoft Graph. The required
+Copilot meeting summaries and fallback transcript copies are under:
 
 ```text
 C:\Users\bspender\OneDrive - Microsoft\AMA\knowledge
 ```
 
-Meeting details, meeting chat, community chat, and SharePoint documents are
-optional supporting sources. The repository does not contain this content.
+The run retrieves Graph transcripts first and uses a local transcript only after
+recording that Graph retrieval failed. Meeting chat, community chat, and
+SharePoint documents are optional supporting sources. Graph recordings, Graph AI
+insights, and SharePoint recording folders are outside this example.
 
 The example reviews August 7 through September 5, 2026. September 6 is not
-included. Each primary `.docx` file must be directly under the knowledge folder,
-not in a child folder.
+included. Each local `.docx` summary or fallback transcript must be directly
+under the knowledge folder, not in a child folder.
 
 ### Step 1: Study the worked files
 
@@ -271,9 +274,10 @@ results, cycle changes, and recorded repair results to judge progress.
 The example keeps a 10-cycle limit. Each cycle should choose one main repair
 without turning the first cycle into one large pass.
 
-The parent agent may use two or three child agents when a target slice has clear,
-separate parts. The parent remains the only writer of the official run and task
-files.
+For occurrence extraction, the worked context uses two or three child agents to
+cover every meeting date with the same extraction contract. A child may handle
+more than one date. The parent validates and integrates every result and remains
+the only writer of the official run and task files.
 
 ### Step 8: Inspect the output
 
@@ -286,15 +290,19 @@ The context writes results under:
 If that root rejects a declared format after a labeled source is opened, the
 worked context allows the same Markdown artifacts and JSONL event sidecar under
 `output\lobster-pound\` in the Cowork session. The run file records which root
-was used and why. Fallback files are not automatically copied back to the
-primary root.
+was used and why. At the next run, the agent checks both approved roots when
+they are readable and carries forward the newest valid theme ledger, commitment
+register, and glossary. It does not synchronize the complete output trees. The
+Cowork fallback provides only best-effort continuity within a session; a later
+session may not be able to reopen it.
 
 Start with the run file in `runs\`. Inspect:
 
 1. **Loop Preflight** — Was the goal safe, checkable, and possible within the
    cycle limit?
-2. **Work Event Log** — Are cycle starts, validation failures, retries, and
-   cycle endings backed by sequential events in the `.events.jsonl` sidecar?
+2. **Work Event Log** — Are cycle starts, required-source lookups, tool failures,
+   fallbacks, validation results, and cycle endings backed by sequential events
+   in the `.events.jsonl` sidecar?
 3. **DONE WHEN Results** — Which checks passed or failed, and what evidence was
    recorded?
 4. **Slice and Cycle History** — Why was each repair chosen, and what changed?
@@ -370,13 +378,17 @@ unsupported success.
 
 ### No child agents appear
 
-Child agents are optional. The agent should use them only when a target slice
-can be divided into separate, useful parts.
+Child agents are optional for general Goal Cards. The Lobster Pound context
+requires two or three children to cover all occurrence extraction partitions
+consistently. If Cowork cannot launch them, the run should record the exception
+and apply the same extraction packet to every date.
 
 ### A source cannot be read
 
 Required source failures block successful completion. Optional source failures
 should be recorded as gaps without being treated as proof that nothing happened.
+For transcripts, a Graph failure selects the approved local fallback only after
+the failure and fallback are recorded in the event sidecar.
 
 ### The output path cannot be written
 
