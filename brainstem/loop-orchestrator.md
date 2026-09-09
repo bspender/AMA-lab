@@ -28,8 +28,10 @@ Only these controls are part of this contract:
 - `STATUS [run=<run-file-path>]`
 
 `START` creates or resumes one run and continues cycling without waiting between cycles. When `run` is
-omitted, resume the single non-terminal run for the named Goal Card; create a new run when none exists. If
-multiple non-terminal runs match, stop before mutation and report the candidate paths.
+omitted, resume the single non-terminal run for the named Goal Card. When none exists, resolve any run sequence
+declared by the Goal Card and runtime context before creating a new run. If every declared boundary is already
+complete, report the latest completed run without mutation. If multiple non-terminal runs match, stop before
+mutation and report the candidate paths.
 
 `STATUS` reads persisted state without performing work, rechecking acceptance, changing counters, or
 modifying files.
@@ -64,6 +66,10 @@ The `runtime context` file is optional. `<community-reference>-context.md` defin
 - Reload the `runtime context` file at the start of every cycle so deliberate runtime steering can affect the next
   decision.
 - Record the observed runtime context version or content fingerprint in each cycle log entry.
+- Freeze runtime values that define the run's acceptance boundary, such as source-window start and end plus the
+  complete source allowlist, roles, requirement groups, and classifications, before Cycle 1. A later context change
+  may steer work inside that boundary but may not expand, shrink, move, or weaken it. Record a changed boundary as
+  deferred input for a new run.
 - If the `runtime context` conflicts with the Goal Card, follow the Goal Card and record the ignored conflict.
 - If the `runtime context` points outside the Goal Card's sandbox, do not use that source.
 
@@ -97,6 +103,9 @@ the Goal Card.
 
 Resolve all runtime parameters before work begins. A runtime context value may fill a variable or choice
 explicitly left open by the Goal Card. It may not create a new acceptance policy.
+Persist the resolved acceptance boundary and source-classification fingerprint in the run file. Every cycle
+evaluates the same boundary; collecting a later time period or changing which evidence is required needs a new run
+rather than a new cycle.
 The feasible-cycle-budget test is a capacity check based on current evidence, not a static cycle plan. Record its
 assumptions, then allow observed results to determine later slices.
 
@@ -196,6 +205,9 @@ Required durable checkpoints are:
 - `fallback_selected`, after verifying the replacement source or path;
 - `capture_quality_failed`, before continuing with a degraded required source;
 - `continuity_selected`, after verifying prior state selected for carry-forward;
+- `source_checkpointed`, after comparing the current source checkpoint with prior state;
+- `artifact_reused`, after rereading and validating an unchanged prior artifact;
+- `incomplete_synthesis_written`, after validating a Goal Card-required stopped-run synthesis;
 - `cycle_ended`, with the observed delta and continue, complete, or stop decision;
 - `interrupted` or `stopped`, when applicable.
 
@@ -244,12 +256,16 @@ The event-log path is the run-file path with `.md` replaced by `.events.jsonl`.
 
 On a new run:
 
-1. create the run file from the contract below and an empty event-log sidecar;
-2. record the Goal Card path, version or fingerprint, and resolved stop-caps;
-3. record the context path and current version or fingerprint, or `none`;
-4. set `Status: In Progress`, `Cycle: 0`, and `Stall Count: 0`;
-5. append and verify `run_initialized` in the event log;
-6. save and reread the run file before Cycle 1.
+1. resolve the proposed acceptance boundary and any Goal Card eligibility rule before creating files or consuming a
+   run-sequence position. If the boundary is not yet eligible, report the observed condition and next eligible
+   boundary without creating a run;
+2. create the run file from the contract below and an empty event-log sidecar;
+3. record the Goal Card path, version or fingerprint, and resolved stop-caps;
+4. record the fixed acceptance boundary, including source-window values and the source-classification fingerprint;
+5. record the context path and current version or fingerprint, or `none`;
+6. set `Status: In Progress`, `Cycle: 0`, and `Stall Count: 0`;
+7. append and verify `run_initialized` in the event log;
+8. save and reread the run file before Cycle 1.
 
 On a resumed run, restore all state from the run file and event log, append and verify `run_resumed`, then save and
 reread the run file before continuing. Conversation history is non-authoritative.
@@ -270,6 +286,8 @@ While the run is `In Progress`:
    - For a fresh cycle, set and persist `Cycle` to the prior cycle number plus one before any other cycle work. An
      interrupted active slice keeps its cycle number.
    - Reload the Goal Card, optional context, run file, artifact, and named inputs.
+   - Keep using the acceptance boundary persisted at run initialization. Defer any later boundary change to a new
+     run and record that decision. This includes changes to source roles, requirement groups, and classifications.
    - Restore the current Goal Card stage, failed checks, backlog, metrics, and stall count.
    - Evaluate current artifact evidence against every applicable `DONE WHEN` check.
    - Identify regressions, blocked inputs, and the highest-priority measurable gap.
@@ -298,8 +316,13 @@ While the run is `In Progress`:
    - If every `DONE WHEN` check passes, mark `Complete`.
    - Otherwise set `Stall Count` to `0` when the cycle made measurable progress, or increment it by `1` when the
      cycle made no measurable progress. Persist it before evaluating stop-caps.
+   - If a Goal Card stop-cap applies and the Goal Card declares an incomplete synthesis, write, validate, and
+     reread that clearly labelled non-authoritative artifact, then append and verify
+     `incomplete_synthesis_written`, before marking `Stopped`. Skip it only when unsafe persistence is the stop
+     reason.
    - If a Goal Card stop-cap applies, mark `Stopped`.
    - Append and verify the `cycle_ended` event with the decision.
+   - When the decision is stop, append and verify `stopped` after `cycle_ended`.
    - Rebuild the Markdown Slice and Cycle History from the event sidecar, update `Updated`, save the run file, and
      reread it at every cycle boundary.
    - If continuing, immediately begin the next cycle and dynamically select its target slice in this same invocation.
@@ -338,6 +361,9 @@ Every run file must contain these sections. `templates\use-case-run.baseline.md`
 - run ID and status: `In Progress`, `Complete`, or `Stopped`;
 - Goal Card path and starting version or fingerprint;
 - optional context path and latest observed version or fingerprint;
+- fixed acceptance boundary, including source-window start and end when applicable;
+- frozen source allowlist and classification fingerprint;
+- run-sequence position and prior boundary when the Goal Card defines incremental runs;
 - created and updated timestamps;
 - current and maximum cycle;
 - stall count and stall cap;
@@ -402,10 +428,15 @@ Report:
 
 ### Stopped
 
+Before responding, when the Goal Card declares an incomplete synthesis and the resolved output root is writable,
+write, validate, and reread it if it does not already exist. Append and verify `incomplete_synthesis_written` before
+the terminal `stopped` event. When unsafe persistence prevents this artifact, record that reason rather than
+claiming it was written.
+
 Report:
 
 1. the stop reason;
-2. artifact and run-file paths;
+2. artifact and run-file paths, including the incomplete synthesis when the Goal Card declares one;
 3. failed `DONE WHEN` checks and evidence;
 4. the smallest next action outside this run;
 5. the persisted progress line.
@@ -423,6 +454,12 @@ Report:
 
 Report only persisted state and the persisted progress line. Do not estimate or re-evaluate.
 
-The final line for every response is:
+### Boundary not eligible
+
+When a proposed run-sequence boundary fails its eligibility rule before a run is created, report the proposed
+boundary, observed condition, and next eligible action. State that no run or sequence position was created. Do not
+emit a progress heartbeat because no run exists.
+
+The final line for every run-backed response is:
 
 `[USE-CASE LOOP] run=<run-id> | cycle=<n>/<max> | stage=<goal-stage> | checks=<passed>/<total> | stall=<n>/<cap> | status=<IN_PROGRESS|COMPLETE|STOPPED>`

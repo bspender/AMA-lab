@@ -26,6 +26,11 @@ Design the goal -> Start the run -> Check the work -> Repair a gap -> Check agai
 More cycles do not automatically mean more learning. Each cycle should make a
 visible change that helps the work pass.
 
+The worked example also separates **new evidence** from **repair work**:
+
+- a new weekly run advances the fixed fiscal-year window;
+- cycles inside that run repair gaps without moving the window.
+
 ## Repository files
 
 | File | What you learn from it |
@@ -35,7 +40,7 @@ visible change that helps the work pass.
 | [`brainstem/loop-orchestrator.md`](brainstem/loop-orchestrator.md) | How a run selects work, checks progress, records state, and stops |
 | [`brainstem/templates/use-case-run.baseline.md`](brainstem/templates/use-case-run.baseline.md) | What the run records so you can inspect and resume it |
 | [`brainstem/templates/use-case-context.baseline.md`](brainstem/templates/use-case-context.baseline.md) | How to provide settings that may change from one run to another |
-| [`brainstem/lobster-pound-review-goal-card.md`](brainstem/lobster-pound-review-goal-card.md) | A worked Goal Card for a 30-day community review |
+| [`brainstem/lobster-pound-review-goal-card.md`](brainstem/lobster-pound-review-goal-card.md) | A worked Goal Card for incremental fiscal-year community review |
 | [`brainstem/lobster-pound-community-context.md`](brainstem/lobster-pound-community-context.md) | The approved paths, dates, sources, and limits for the worked example |
 
 ## How the files work together
@@ -71,8 +76,11 @@ The Goal Card says what success means. It has eight sections:
 ### Runtime context
 
 The context file supplies values for one run, such as paths, dates, source names,
-and tighter limits. It may narrow the Goal Card. It may not weaken the Goal
-Card's finish line.
+source requirement groups, and tighter limits. The Goal Card defines how
+required, degraded, fallback, and optional evidence are handled. The context
+defines which approved sources have those roles for this run. The complete
+classification is frozen before Cycle 1, so a later edit cannot turn a failing
+required source into an optional one.
 
 ### Loop orchestrator
 
@@ -162,9 +170,16 @@ recording that Graph retrieval failed. Meeting chat, community chat, and
 SharePoint documents are optional supporting sources. Graph recordings, Graph AI
 insights, and SharePoint recording folders are outside this example.
 
-The example reviews August 7 through September 5, 2026. September 6 is not
-included. Each local `.docx` summary or fallback transcript must be directly
-under the knowledge folder, not in a child folder.
+The runtime context defines the fiscal-year start, first Friday boundary, weekly
+increment, and demo catch-up boundary. The example creates one separate
+cumulative run for each configured Friday boundary. Each local `.docx` summary
+or fallback transcript must be directly under the knowledge folder, not in a
+child folder.
+
+Each weekly run checks every expected occurrence and source checkpoint in its
+cumulative window. It reuses verified unchanged occurrence records and digests,
+extracts only new or changed weeks, and then rebaselines themes, commitments,
+glossary terms, taxonomy, and open questions.
 
 ### Step 1: Study the worked files
 
@@ -175,7 +190,7 @@ Read:
 
 Before changing anything, find:
 
-1. the source window;
+1. the fiscal-year start, first weekly boundary, and catch-up boundary;
 2. required and optional sources;
 3. the output location;
 4. the 16 finish-line checks;
@@ -250,14 +265,38 @@ Send:
 START goal=lobster-pound-review-goal-card.md context=lobster-pound-community-context.md
 ```
 
-The agent creates or resumes a run. It continues until:
+The agent creates or resumes one fixed-window weekly run. It continues until:
 
 - every `DONE WHEN` check passes;
 - a stop limit applies; or
 - the environment interrupts the run.
 
-Send `START` once. Do not prompt the agent again between cycles unless it reports
-an interruption or asks for a decision required by the Goal Card.
+Before creating a new run, the agent confirms that its Friday boundary has
+passed and every non-cancelled meeting inside it has completed. If not, it
+reports the next eligible boundary without creating a run or consuming that
+weekly position.
+
+Send `START` once for that weekly run. Do not prompt the agent again between
+cycles unless it reports an interruption or asks for a decision required by the
+Goal Card.
+
+When the run completes, send the same `START` instruction again to create the
+next cumulative weekly run. The first run uses the fiscal-year start and first
+Friday boundary from the runtime context. The next run keeps that evidence and
+advances the boundary by the configured weekly increment. Continue until the
+configured catch-up boundary is complete. If the final boundary is already
+complete, the agent reports that the demo is caught up instead of rebuilding it.
+
+```text
+Run 1: <fiscal-year-start> -> <first-Friday-boundary> exclusive
+Run 2: <fiscal-year-start> -> <first-Friday-boundary + weekly increment> exclusive
+Run 3: <fiscal-year-start> -> <first-Friday-boundary + two weekly increments> exclusive
+...
+Final run: <fiscal-year-start> -> <catch-up-boundary> exclusive
+```
+
+A run's end date never changes between cycles. A later week belongs to a new
+run.
 
 ### Step 7: Watch the run
 
@@ -274,10 +313,11 @@ results, cycle changes, and recorded repair results to judge progress.
 The example keeps a 10-cycle limit. Each cycle should choose one main repair
 without turning the first cycle into one large pass.
 
-For occurrence extraction, the worked context uses two or three child agents to
-cover every meeting date with the same extraction contract. A child may handle
-more than one date. The parent validates and integrates every result and remains
-the only writer of the official run and task files.
+For occurrence extraction, the worked context normally uses one child for the
+new weekly occurrence. If several occurrences are new or changed, it uses two or
+three children to cover them with the same extraction contract. The parent
+validates and integrates every result and remains the only writer of the
+official run and task files.
 
 ### Step 8: Inspect the output
 
@@ -291,25 +331,28 @@ If that root rejects a declared format after a labeled source is opened, the
 worked context allows the same Markdown artifacts and JSONL event sidecar under
 `output\lobster-pound\` in the Cowork session. The run file records which root
 was used and why. At the next run, the agent checks both approved roots when
-they are readable and carries forward the newest valid theme ledger, commitment
-register, and glossary. It does not synchronize the complete output trees. The
-Cowork fallback provides only best-effort continuity within a session; a later
-session may not be able to reopen it.
+they are readable and carries forward the expected prior fiscal-year state plus
+verified occurrence records and digests. It does not synchronize unrelated
+files. The Cowork fallback provides only best-effort continuity within a
+session; a later session may not be able to reopen it.
 
 Start with the run file in `runs\`. Inspect:
 
 1. **Loop Preflight** — Was the goal safe, checkable, and possible within the
    cycle limit?
-2. **Work Event Log** — Are cycle starts, required-source lookups, tool failures,
-   fallbacks, validation results, and cycle endings backed by sequential events
-   in the `.events.jsonl` sidecar?
+2. **Work Event Log** — Are cycle starts, required-source lookups, source
+   checkpoints, artifact reuse, tool failures, fallbacks, validation results,
+   and cycle endings backed by sequential events in the `.events.jsonl`
+   sidecar?
 3. **DONE WHEN Results** — Which checks passed or failed, and what evidence was
    recorded?
-4. **Slice and Cycle History** — Why was each repair chosen, and what changed?
-5. **Backlog Decision History** — Why did remaining work move up or down?
-6. **Child Activity Log** — Which work was delegated and accepted?
-7. **Stop Reason and final cycle decision** — Why did the run complete or stop?
-8. **Persisted Progress Line** — What was the final cycle, stage, check count,
+4. **Source Checkpoints and Reuse Plan** — Which weeks were new, changed, or
+   safely reused?
+5. **Slice and Cycle History** — Why was each repair chosen, and what changed?
+6. **Backlog Decision History** — Why did remaining work move up or down?
+7. **Child Activity Log** — Which work was delegated and accepted?
+8. **Stop Reason and final cycle decision** — Why did the run complete or stop?
+9. **Persisted Progress Line** — What was the final cycle, stage, check count,
    stall count, and status?
 
 Open the matching `.events.jsonl` file and confirm that sequence numbers are
@@ -318,8 +361,9 @@ continuous and its events match the Markdown cycle summaries.
 Inspect the files that the run created. A completed run should include the final
 report plus occurrence records, digests, commitments, the theme ledger, theme
 files, glossary, taxonomy, and open questions named by the Goal Card. A stopped
-or interrupted run may contain only part of that set. Do not treat a missing
-final report as a separate error when the run did not complete.
+run should include a clearly labelled, non-authoritative `.INCOMPLETE.md`
+synthesis with its available findings, evidence limits, failed checks, and next
+action. An interrupted run may contain only part of that set.
 
 ### Step 9: Read status without doing work
 
@@ -357,7 +401,9 @@ Use the run file to answer:
 4. Which other checks improved from the same work?
 5. Why was the next backlog item chosen?
 6. Did child agents divide real work, or only create more activity?
-7. Why did the run complete, stop, or get interrupted?
+7. Which earlier weeks were reused instead of re-extracted, and what proved they
+   were unchanged?
+8. Why did the run complete, stop, or get interrupted?
 
 If you cannot answer these questions from the run file, the run did not make its
 learning path clear enough.
@@ -379,9 +425,22 @@ unsupported success.
 ### No child agents appear
 
 Child agents are optional for general Goal Cards. The Lobster Pound context
-requires two or three children to cover all occurrence extraction partitions
-consistently. If Cowork cannot launch them, the run should record the exception
-and apply the same extraction packet to every date.
+uses one child for one new or changed occurrence, or two or three children for
+multiple changed partitions. If no occurrence needs extraction, no child is
+needed. If Cowork cannot launch a required child, the run records the exception
+and applies the same extraction packet itself.
+
+### A later week appears during a run
+
+The active run keeps the source window it recorded before Cycle 1. It logs the
+new boundary as deferred input and leaves it for the next run. Expanding the
+window inside a cycle would move the finish line.
+
+### The next weekly boundary is not ready
+
+The agent checks the proposed boundary before creating a run. A future boundary
+or a meeting still in progress is reported as not yet eligible. The weekly
+position remains available for a later `START`.
 
 ### A source cannot be read
 
@@ -389,6 +448,10 @@ Required source failures block successful completion. Optional source failures
 should be recorded as gaps without being treated as proof that nothing happened.
 For transcripts, a Graph failure selects the approved local fallback only after
 the failure and fallback are recorded in the event sidecar.
+
+A present but degraded required source does not disappear from the analysis. The
+run records the quality problem, limits claims that depend on missing detail,
+and continues with the other available evidence.
 
 ### The output path cannot be written
 

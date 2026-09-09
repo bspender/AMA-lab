@@ -10,6 +10,12 @@
 | Goal Version / Fingerprint | |
 | Runtime Context | none |
 | Context Version / Fingerprint | none |
+| Acceptance Boundary | |
+| Run Sequence Position | |
+| Boundary Start | |
+| Boundary End (Exclusive) | |
+| Prior Boundary End (Exclusive) | none |
+| Source Classification Fingerprint | |
 | Created | |
 | Updated | |
 | Cycle | 0 |
@@ -48,6 +54,15 @@
 | Setting | Value | Source |
 |---|---|---|
 | | | Goal Card or context |
+
+## Source Checkpoints and Reuse Plan
+
+Compare the complete fixed input boundary with the prior run before action. Reuse an artifact only after its
+current input checkpoint and saved artifact fingerprint are verified.
+
+| Input Partition | Required Checkpoints | Fallback or Optional Checkpoints | Quality Result | Prior Artifact | Decision | Evidence |
+|---|---|---|---|---|---|---|
+| | | | | | New / Reprocess / Reconcile / Reuse | |
 
 ## Work Event Log
 
@@ -129,6 +144,7 @@ Append every material addition, removal, split, merge, or rank change.
 | Metric | Baseline | Current | Target | Last Delta |
 |---|---:|---:|---:|---:|
 | Passing DONE WHEN checks | 0 | 0 | | 0 |
+| | | | | |
 
 ## Slice and Cycle History
 

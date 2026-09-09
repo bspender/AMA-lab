@@ -65,10 +65,11 @@ a valid result.
 
 Students inspect `brainstem\lobster-pound-review-goal-card.md`.
 
-The example asks the agent to review a 30-day window of Lobster Pound community
-meetings. Graph meeting transcripts and local Copilot meeting summaries are the
-main evidence; local transcript copies are fallbacks. Teams conversations and
-SharePoint documents are optional supporting sources.
+The example asks the agent to build a fiscal-year-to-date understanding of
+Lobster Pound community meetings through separate cumulative weekly runs. Graph
+meeting transcripts and local Copilot meeting summaries are the main evidence;
+local transcript copies are fallbacks. Teams conversations and SharePoint
+documents are optional supporting sources.
 
 Students should notice that the card separates:
 
@@ -76,6 +77,11 @@ Students should notice that the card separates:
 - required sources from optional sources;
 - finish-line checks from quality guidance;
 - successful completion from an incomplete but honest stop.
+
+They should also distinguish:
+
+- **runs**, which add one weekly evidence boundary;
+- **cycles**, which repair the fixed evidence set inside one run.
 
 ### 4. See what changes for one run
 
@@ -87,11 +93,26 @@ may narrow the Goal Card, but it may not weaken the Goal Card's finish line.
 This teaches a useful split:
 
 - the Goal Card says what success means;
-- the context file says what is true for this run.
+- the Goal Card says how missing, degraded, fallback, and optional evidence are
+  handled;
+- the context file says which approved sources have those roles for this run.
+
+The source classification is frozen before Cycle 1. A context edit cannot make
+a failing required source optional during the run.
 
 ### 5. Run the loop
 
 Students use `brainstem\loop-orchestrator.md` to start the worked example.
+
+The first run freezes the cumulative window defined by the fiscal-year start and
+first weekly boundary in the runtime context. After it completes, another
+`START` advances that boundary by one configured weekly increment. Each later
+run checks the full cumulative window, reuses verified unchanged weeks, and
+extracts only new or changed occurrences.
+
+Before creating a run, the agent verifies that the proposed weekly boundary has
+passed and every scheduled, non-cancelled occurrence inside it has completed.
+An ineligible boundary is reported without consuming a run.
 
 Each cycle:
 
@@ -103,6 +124,9 @@ Each cycle:
 
 One slice has one main target. It may also improve other checks when the same
 work honestly affects them.
+
+A cycle never adds another week. Moving the weekly boundary would change the
+finish line, so it requires a new run.
 
 The 10-cycle limit is intentional. It pushes the agent to choose useful slices
 without turning the first cycle into one large, hidden pass.
@@ -116,9 +140,10 @@ that the work improved.
 Students use the final run file—not console activity—to decide whether the loop
 made progress.
 
-The worked context uses two or three child agents to cover all meeting-date
-extraction partitions with one shared contract. The parent agent validates and
-integrates the results and remains responsible for the final files and run
+The worked context normally uses one child for the new weekly occurrence. It
+uses two or three children only when several occurrences are new or changed.
+Every child follows one shared extraction contract. The parent agent validates
+and integrates the results and remains responsible for the final files and run
 history.
 
 ### 7. Inspect what the loop learned
@@ -129,13 +154,16 @@ After the run, students inspect the run file created from
 The most important sections are:
 
 - **Work Event Log:** Does the JSONL sidecar contain sequential events for source lookups, failures, fallbacks, and retries as they happened?
-- **Continuity:** Did the run identify and preserve readable prior themes, commitments, and glossary entries before adding new evidence, while disclosing session-fallback limits?
+- **Source reuse:** Did the run verify the full cumulative source window and avoid re-extracting unchanged weeks?
+- **Continuity:** Did the run preserve readable prior fiscal-year state before integrating the new or changed week, while disclosing session-fallback limits?
 - **DONE WHEN Results:** Which checks passed, failed, and why?
 - **Slice and Cycle History:** What did each cycle try, and what changed?
 - **Backlog Decision History:** Why did the next problem move up or down?
 - **Child Activity Log:** What work was delegated, and what was accepted?
 - **Stop Reason and final cycle decision:** Why did the run complete or stop?
 - **Persisted Progress Line:** What was the final state?
+- **Incomplete synthesis:** If the run stopped, did it still produce a clearly
+  labelled, non-authoritative summary of supported findings and failed checks?
 
 The history should make the path to the result easy to explain. If the file only
 shows that more work happened, the loop did not demonstrate learning.

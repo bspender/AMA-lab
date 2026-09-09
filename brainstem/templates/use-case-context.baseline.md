@@ -5,9 +5,9 @@ Context Version: 1
 Applies To Goal: `<goal-card-path>`
 Last Updated: Pending
 
-This optional file supplies per-run configuration and steering. It is not a Goal Card, approval gate, run
-history, or acceptance policy. Copy it beside a Goal Card, fill only the applicable fields, and set
-`Status: Active`.
+This file supplies per-run configuration and steering. It is optional unless the Goal Card explicitly delegates
+runtime values or its source allowlist to this file. It is not a Goal Card, approval gate, run history, or
+acceptance policy. Copy it beside a Goal Card, fill only the applicable fields, and set `Status: Active`.
 
 If this file is absent or inactive, the orchestrator proceeds using the Goal Card alone.
 
@@ -49,12 +49,13 @@ Quality rules not listed here remain in force.
 
 ## CONTEXT Sources
 
-Concrete inputs authorized for this run. A source listed here is usable only when the Goal Card permits that
-source type and location.
+Concrete inputs authorized for this run. A source listed here is usable only when the Goal Card permits that source
+type and location or explicitly makes this table the complete allowlist. When source classification is part of the
+Goal Card's acceptance boundary, freeze this table before Cycle 1; later edits apply only to a new run.
 
-| Source | Locator | Scope or time window | Access mode | Required for this run |
-|---|---|---|---|---|
-| | | | `read-only` | `yes` or `no` |
+| Source | Locator | Scope or time window | Access mode | Requirement group | Frozen classification |
+|---|---|---|---|---|---|
+| | | | `read-only` | | `required primary`, `required preferred`, `conditional fallback`, `required metadata`, `optional`, or `continuity` |
 
 ### Repository configuration
 
@@ -102,5 +103,7 @@ Short-lived steering or known conditions for this run:
 
 -
 
-The orchestrator reloads this file every cycle and records the observed version or content fingerprint in the
-run file. Change the version or `Last Updated` value when changing runtime steering during an active run.
+The orchestrator reloads this file every cycle and records the observed version or content fingerprint in the run
+file. Change the version or `Last Updated` value when changing runtime steering during an active run. Changes to a
+frozen acceptance boundary, source allowlist, requirement group, or source classification are deferred to a new
+run.
