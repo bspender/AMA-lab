@@ -2,7 +2,7 @@
 
 ### OBJECTIVE
 
-Build a trustworthy, meeting-centered understanding of the **MCAPS Lobster Pound Community** fiscal year to date, one fixed cumulative weekly run at a time: what happened, what recurred or changed, and what can be learned—using every source the runtime context classifies as required primary evidence while preserving week-to-week theme evolution, evidence provenance, and optional-source limitations.
+Build a trustworthy, meeting-centered understanding of the **MCAPS Lobster Pound Community** fiscal year to date, one fixed cumulative scheduled run at a time: what happened, what recurred or changed, and what can be learned—using every source the runtime context classifies as required primary evidence while preserving week-to-week theme evolution, evidence provenance, and optional-source limitations.
 
 ### OUTPUT
 
@@ -45,7 +45,7 @@ All checks pass:
 10. **Gaps:** Every recorded gap has an attempted remedy and result.
 11. **Privacy:** Zero private-chat, other-channel, attachment, or unapproved-source content appears in persisted artifacts.
 12. **Integrity:** Every required primary source is readable, fingerprinted, uniquely inventoried, assigned to its meeting occurrence, and records its retrieval or extraction method. Preferred and fallback sources follow the order frozen from the runtime context. When transcript cue end times are available, gaps use cue-end-to-next-start coverage rather than differences between cue starts. When cue end times are unavailable, gap measurement is recorded as unavailable and absence-shaped claims are qualified; start-time differences must not be reported as gaps. Every source with a runtime capture-quality rule records its result before capture metadata is removed. Ambiguous dates, duplicate candidates, and conflicting versions remain quarantined until resolved.
-13. **Continuity:** After resolving the writable output root and before changing state, resolve the latest valid prior weekly fiscal-year run from the approved continuity search roots. Record its cumulative window, run ID, artifact paths, and fingerprints. Carry forward the theme ledger, theme detail files, commitments, glossary, taxonomy, and open questions, preserving stable IDs and unresolved state. Verify prior occurrence records and digests against current source checkpoints; reuse unchanged artifacts in place or copy them when roots differ, and reprocess only new or changed occurrences. Reconcile changed evidence chronologically from its occurrence forward. Never infer commitment completion or overwrite prior meaning without cited new evidence. Prior reports remain immutable. A session-local fallback is best-effort continuity only and must not be described as durable across Cowork sessions.
+13. **Continuity:** After resolving the writable output root and before changing state, resolve the latest valid prior scheduled fiscal-year run from the approved continuity search roots. Record its cumulative window, run ID, artifact paths, and fingerprints. Carry forward the theme ledger, theme detail files, commitments, glossary, taxonomy, and open questions, preserving stable IDs and unresolved state. Verify prior occurrence records and digests against current source checkpoints; reuse unchanged artifacts in place or copy them when roots differ, and reprocess only new or changed occurrences. Reconcile changed evidence chronologically from its occurrence forward. Never infer commitment completion or overwrite prior meaning without cited new evidence. Prior reports remain immutable. A session-local fallback is best-effort continuity only and must not be described as durable across Cowork sessions.
 14. **Structure:** Every terminal run writes a readable synthesis. A completed run uses `reports\<period>.md`; a stopped run uses `reports\<period>.<run-id>.INCOMPLETE.md`, labels it incomplete and non-authoritative, and states the stop reason, failed checks, available findings, evidence limits, and smallest next action. The synthesis answers the objective questions to the extent supported, labels required-primary coverage separately from optional enrichment coverage, gives every optional source an explicit attempted/not-attempted disposition with result or reason, records every check as pass/fail with evidence, and names the resolved output root plus the primary-root failure reason when fallback was used.
 15. **Commitments:** Every explicit owner-attributed follow-up task found in inspected required primary evidence is recorded once in `commitments.md` with a stable ID, owner, raised date, source ID, related theme when known, and status. A commitment is marked done, superseded, or lapsed only with cited evidence; otherwise it remains open.
 16. **Live logging:** The event sidecar contains verified, sequential `run_initialized`, `cycle_started`, validation, and `cycle_ended` events written during execution. Required-source lookup results, source checkpoint comparisons, reused artifacts, lookup failures, tool failures that change the plan, required-source fallbacks, and failed capture-quality checks are recorded when they occur and before any fallback or repair. Every completed cycle and every validation failure or pass produces a matching sidecar event, and the Markdown cycle summary is derived from those events. Missing, reordered, or reconstructed events fail this check.
@@ -71,8 +71,8 @@ These thresholds are **pilot assumptions** to recalibrate after the first run.
 - Occurrence records preserve material attribution and specifics even when the digest omits them.
 - Digest omissions must be visible and addressable; a digest never replaces its occurrence record.
 - Do not infer that a commitment is complete from silence or age.
-- Treat each weekly run as a cumulative fiscal-year rebaseline. Preserve earlier evidence and explain how the new
-  or changed week affected themes, commitments, glossary terms, taxonomy, and open questions.
+- Treat each scheduled run as a cumulative fiscal-year rebaseline. Preserve earlier evidence and explain how the new
+  or changed interval affected themes, commitments, glossary terms, taxonomy, and open questions.
 - State “Primary meeting evidence processing complete; optional enrichment coverage: <status>” in the report and run file.
 - Never interpret a missing source record as evidence that no activity occurred.
 
@@ -100,12 +100,12 @@ Read only:
 - Freeze every runtime source row, role, requirement classification, locator, and scope before Cycle 1. A context
   reload may not change a required source to optional, introduce a new source, or otherwise change the evidence
   needed to pass the active run.
-- Freeze the cumulative source-window start and end before Cycle 1. A cycle must not add another week or move the
-  finish line; only a new run may advance to the next weekly boundary.
+- Freeze the cumulative source-window start and end before Cycle 1. A cycle must not add another interval or move
+  the finish line; only a new run may advance to the next configured boundary.
 
 ### STAGES
 
-1. **Inventory evidence:** Resolve and freeze the next cumulative fiscal-year window and source classification, perform the run-start persistence test, resolve the prior weekly run, reconcile every expected occurrence and required source in the cumulative window, and compare current source checkpoints with prior state.
+1. **Inventory evidence:** Resolve and freeze the next cumulative fiscal-year window and source classification, perform the run-start persistence test, resolve the prior scheduled run, reconcile every expected occurrence and required source in the cumulative window, and compare current source checkpoints with prior state.
 2. **Condense and reconcile:** Apply one consistent extraction contract to every new or changed occurrence, reuse verified unchanged occurrence records and digests, and integrate evidence chronologically into the carried fiscal-year state.
 3. **Verify and repair:** Check coverage, provenance, recurrence, freshness, contradictions, privacy, gaps, and continuity; repair failures.
 4. **Persist understanding:** Update permitted state files. Write the completed period report when every check passes, or write the clearly labelled `.INCOMPLETE.md` synthesis before a stopped handback.

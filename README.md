@@ -20,16 +20,38 @@ An AI answer can look complete without being trustworthy. A loop adds a clear
 finish line and a way to repair failed checks.
 
 ```text
-Design the goal -> Start the run -> Check the work -> Repair a gap -> Check again
+Design the goal -> START one run -> Cycle: assess, act, verify, persist and decide
 ```
 
 More cycles do not automatically mean more learning. Each cycle should make a
-visible change that helps the work pass.
+visible, persisted change that helps the work pass or satisfies a stage exit
+condition.
 
 The worked example also separates **new evidence** from **repair work**:
 
-- a new weekly run advances the fixed fiscal-year window;
+- a new scheduled run advances the fixed fiscal-year window;
 - cycles inside that run repair gaps without moving the window.
+
+### Run, cycle, stage, and target slice
+
+| Term | Scope | Progress measure | End condition |
+|---|---|---|---|
+| **Run** | One bounded execution against a frozen Goal Card and acceptance boundary | Fixed `DONE WHEN` pass count plus artifact, source, gap, backlog, and stall measures | `Complete` when all checks pass, or `Stopped` when preflight or a stop-cap applies. An interruption leaves it `In Progress` |
+| **Cycle** | One `Assess -> Act -> Verify -> Persist and Decide` iteration inside a run | Expected versus observed target-slice delta, affected checks, backlog movement, and stall movement | The cycle state and one `cycle_ended` event are persisted with `continue`, `complete`, or `stop` |
+| **Stage** | A phase defined only by the Goal Card | Recorded stage-exit evidence and applicable check or artifact state | Its exit conditions pass; it may span multiple cycles |
+| **Target slice** | The smallest coherent action integrated by a cycle | Its declared measurable delta and verification method | It is verified and integrated, or resumes under the same cycle after an interruption |
+
+The **loop** is the continuous sequence of cycles inside one run. A stage is not
+a loop and is not automatically one cycle. One `START` authorizes all remaining
+cycles in that run; a `continue` decision starts the next cycle immediately.
+After a run becomes terminal, the worked fiscal schedule requires another
+`START` to select the next boundary. This repository does not schedule that
+future run automatically.
+
+These Markdown files are an instruction and persistence contract interpreted by
+an agent, not a workflow engine that mechanically enforces compliance. Inspect
+the event sidecar and current artifacts before accepting a run's check results.
+A self-declared pass is not sufficient when those records disagree.
 
 ## Repository files
 
@@ -90,8 +112,13 @@ The orchestrator controls the run:
 Assess -> Act -> Verify -> Persist and Decide
 ```
 
-Each cycle chooses one **target slice**: a small repair aimed at one main failed
-check or stage goal. The same repair may also improve other checks.
+Each cycle chooses one **target slice**: the smallest coherent action aimed at
+one main failed check or stage exit condition. A slice may establish missing
+state or repair a failure, and the same work may improve other checks.
+
+Stages come only from the Goal Card. A stage may span several cycles and
+advances only when its exit evidence is recorded. Reaching the final stage does
+not complete the run unless every `DONE WHEN` check passes.
 
 ### Run file
 
@@ -170,16 +197,17 @@ recording that Graph retrieval failed. Meeting chat, community chat, and
 SharePoint documents are optional supporting sources. Graph recordings, Graph AI
 insights, and SharePoint recording folders are outside this example.
 
-The runtime context defines the fiscal-year start, first Friday boundary, weekly
-increment, and demo catch-up boundary. The example creates one separate
-cumulative run for each configured Friday boundary. Each local `.docx` summary
-or fallback transcript must be directly under the knowledge folder, not in a
-child folder.
+The runtime context defines the fiscal-year start and an ordered boundary
+schedule. The example uses an initial-week run, a remaining-July run, an August
+run, and then weekly September runs. Each local `.docx` summary or fallback
+transcript must be directly under the knowledge folder, not in a child folder.
 
-Each weekly run checks every expected occurrence and source checkpoint in its
+Each scheduled run checks every expected occurrence and source checkpoint in its
 cumulative window. It reuses verified unchanged occurrence records and digests,
-extracts only new or changed weeks, and then rebaselines themes, commitments,
-glossary terms, taxonomy, and open questions.
+extracts only new or changed weeks, and must then reconcile themes, commitments,
+glossary terms, taxonomy, and open questions into one current cumulative state.
+Appending a new section without updating authoritative current-state fields is
+not a successful rebaseline.
 
 ### Step 1: Study the worked files
 
@@ -190,7 +218,7 @@ Read:
 
 Before changing anything, find:
 
-1. the fiscal-year start, first weekly boundary, and catch-up boundary;
+1. the fiscal-year start and ordered run boundary schedule;
 2. required and optional sources;
 3. the output location;
 4. the 16 finish-line checks;
@@ -257,7 +285,7 @@ Read @lobster-pound-review-goal-card.md and @lobster-pound-community-context.md 
 
 This loads the files. It does not start the run.
 
-### Step 6: Start the loop
+### Step 6: Start one run
 
 Send:
 
@@ -265,38 +293,41 @@ Send:
 START goal=lobster-pound-review-goal-card.md context=lobster-pound-community-context.md
 ```
 
-The agent creates or resumes one fixed-window weekly run. It continues until:
+The agent creates or resumes one fixed-window scheduled run. It continues until:
 
 - every `DONE WHEN` check passes;
 - a stop limit applies; or
 - the environment interrupts the run.
 
-Before creating a new run, the agent confirms that its Friday boundary has
+Before creating a new run, the agent confirms that its configured boundary has
 passed and every non-cancelled meeting inside it has completed. If not, it
 reports the next eligible boundary without creating a run or consuming that
-weekly position.
+schedule position.
 
-Send `START` once for that weekly run. Do not prompt the agent again between
+Send `START` once for that scheduled run. Do not prompt the agent again between
 cycles unless it reports an interruption or asks for a decision required by the
 Goal Card.
 
 When the run completes, send the same `START` instruction again to create the
-next cumulative weekly run. The first run uses the fiscal-year start and first
-Friday boundary from the runtime context. The next run keeps that evidence and
-advances the boundary by the configured weekly increment. Continue until the
-configured catch-up boundary is complete. If the final boundary is already
-complete, the agent reports that the demo is caught up instead of rebuilding it.
+next cumulative scheduled run. The first run uses schedule position 1. The next
+run keeps that evidence and selects position 2. Continue in order until the
+final configured boundary is complete. If that boundary is already complete,
+the agent reports that the demo is caught up instead of rebuilding it.
 
 ```text
-Run 1: <fiscal-year-start> -> <first-Friday-boundary> exclusive
-Run 2: <fiscal-year-start> -> <first-Friday-boundary + weekly increment> exclusive
-Run 3: <fiscal-year-start> -> <first-Friday-boundary + two weekly increments> exclusive
+Run 1: <fiscal-year-start> -> <boundary position 1> exclusive
+Run 2: <fiscal-year-start> -> <boundary position 2> exclusive
+Run 3: <fiscal-year-start> -> <boundary position 3> exclusive
 ...
-Final run: <fiscal-year-start> -> <catch-up-boundary> exclusive
+Final run: <fiscal-year-start> -> <final configured boundary> exclusive
 ```
 
-A run's end date never changes between cycles. A later week belongs to a new
-run.
+A run's end date never changes between cycles. A later configured interval
+belongs to a new run.
+
+`Complete` and `Stopped` are terminal run states. `Interrupted` describes an
+environmental break, not a third terminal state: the persisted run remains `In
+Progress` and the same `START` instruction resumes its unfinished slice.
 
 ### Step 7: Watch the run
 
@@ -310,11 +341,20 @@ You may see the same line more than once. Repeated lines show that the process i
 still alive. They do not prove that the work improved. Use the run file's check
 results, cycle changes, and recorded repair results to judge progress.
 
-The example keeps a 10-cycle limit. Each cycle should choose one main repair
-without turning the first cycle into one large pass.
+Read the heartbeat fields at different levels:
 
-For occurrence extraction, the worked context normally uses one child for the
-new weekly occurrence. If several occurrences are new or changed, it uses two or
+| Field | Meaning |
+|---|---|
+| `run` and `status` | Which bounded run is active and whether it is still in progress or terminal |
+| `cycle` and `stall` | Which iteration is active and how many consecutive cycles lacked measurable progress |
+| `stage` | Which Goal Card phase currently governs the work; it may remain unchanged across several cycles |
+| `checks` | Run-level acceptance progress against the fixed `DONE WHEN` set |
+
+The example keeps a 10-cycle limit. Each cycle should choose one main target
+slice without turning the first cycle into one large pass.
+
+For occurrence extraction, the worked context uses one child when one occurrence
+is new or changed. If several occurrences are new or changed, it uses two or
 three children to cover them with the same extraction contract. The parent
 validates and integrates every result and remains the only writer of the
 official run and task files.
@@ -344,15 +384,19 @@ Start with the run file in `runs\`. Inspect:
    checkpoints, artifact reuse, tool failures, fallbacks, validation results,
    and cycle endings backed by sequential events in the `.events.jsonl`
    sidecar?
-3. **DONE WHEN Results** — Which checks passed or failed, and what evidence was
+3. **Current Target Slice** — What measurable delta and verification method did
+   the active cycle declare?
+4. **DONE WHEN Results** — Which checks passed or failed, and what evidence was
    recorded?
-4. **Source Checkpoints and Reuse Plan** — Which weeks were new, changed, or
+5. **Goal Stage State** — Which Goal Card stage was active, what exit evidence
+   was recorded, and why did it advance or remain active?
+6. **Source Checkpoints and Reuse Plan** — Which weeks were new, changed, or
    safely reused?
-5. **Slice and Cycle History** — Why was each repair chosen, and what changed?
-6. **Backlog Decision History** — Why did remaining work move up or down?
-7. **Child Activity Log** — Which work was delegated and accepted?
-8. **Stop Reason and final cycle decision** — Why did the run complete or stop?
-9. **Persisted Progress Line** — What was the final cycle, stage, check count,
+7. **Slice and Cycle History** — Why was each slice chosen, and what changed?
+8. **Backlog Decision History** — Why did remaining work move up or down?
+9. **Child Activity Log** — Which work was delegated and accepted?
+10. **Stop Reason and final cycle decision** — Why did the run complete or stop?
+11. **Persisted Progress Line** — What was the final cycle, stage, check count,
    stall count, and status?
 
 Open the matching `.events.jsonl` file and confirm that sequence numbers are
@@ -399,11 +443,13 @@ Use the run file to answer:
 2. Why did the agent choose its first target slice?
 3. What visible state changed?
 4. Which other checks improved from the same work?
-5. Why was the next backlog item chosen?
-6. Did child agents divide real work, or only create more activity?
-7. Which earlier weeks were reused instead of re-extracted, and what proved they
+5. What Goal Card stage was active, and what evidence allowed or prevented it
+   from advancing?
+6. Why was the next backlog item chosen?
+7. Did child agents divide real work, or only create more activity?
+8. Which earlier weeks were reused instead of re-extracted, and what proved they
    were unchanged?
-8. Why did the run complete, stop, or get interrupted?
+9. Why did the run complete, stop, or get interrupted?
 
 If you cannot answer these questions from the run file, the run did not make its
 learning path clear enough.
@@ -430,16 +476,16 @@ multiple changed partitions. If no occurrence needs extraction, no child is
 needed. If Cowork cannot launch a required child, the run records the exception
 and applies the same extraction packet itself.
 
-### A later week appears during a run
+### A later boundary appears during a run
 
 The active run keeps the source window it recorded before Cycle 1. It logs the
 new boundary as deferred input and leaves it for the next run. Expanding the
 window inside a cycle would move the finish line.
 
-### The next weekly boundary is not ready
+### The next configured boundary is not ready
 
 The agent checks the proposed boundary before creating a run. A future boundary
-or a meeting still in progress is reported as not yet eligible. The weekly
+or a meeting still in progress is reported as not yet eligible. The schedule
 position remains available for a later `START`.
 
 ### A source cannot be read
@@ -472,6 +518,11 @@ Progress is a recorded change such as:
 - a conflict or gap being resolved.
 
 More words, tool calls, child agents, or cycles are not progress by themselves.
+
+At cycle level, progress is the verified delta for the target slice. At stage
+level, progress is evidence toward the stage exit. At run level, progress is
+movement in the fixed acceptance checks and supporting metrics. A stage label or
+larger artifact alone proves none of these.
 
 ## Scope
 

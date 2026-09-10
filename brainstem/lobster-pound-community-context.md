@@ -1,16 +1,16 @@
 # Lobster Pound Community Runtime Context
 
 Status: **Active**
-Context Version: 11
+Context Version: 12
 Applies To Goal: `lobster-pound-review-goal-card.md`
-Last Updated: 2026-09-08
+Last Updated: 2026-09-09
 
 This file supplies approved source locators and runtime values for the Lobster Pound community-insights run. The
 Goal Card remains authoritative for acceptance, quality, stages, and stop-caps.
 
 ## OBJECTIVE Steering
 
-- Current run focus: Incremental fiscal-year catch-up through separate cumulative weekly runs, using Graph meeting transcripts and local Copilot meeting summaries as primary evidence, with local transcripts as fallback.
+- Current run focus: Incremental fiscal-year catch-up through separate cumulative scheduled runs, using Graph meeting transcripts and local Copilot meeting summaries as primary evidence, with local transcripts as fallback.
 - Priority outcomes: Identify what happened, what recurred or changed, and what can be learned from the community.
 - Intended audience or consumer: The user.
 - Seed themes: Second brain, Obsidian, Skill Shack, Scout's future, and announcements.
@@ -26,11 +26,11 @@ Goal Card remains authoritative for acceptance, quality, stages, and stop-caps.
 | Digest naming | `digests\<YYYY-MM-DD>.md` | Reusable meeting-date views |
 | Occurrence naming | `occurrences\<YYYY-MM-DD>.md` | Uncapped structured evidence record |
 | Commitment register | `commitments.md` | Owner-attributed follow-up tasks across occurrences |
-| Completed report naming | `reports\fy-start-2026-07-01_through-<last-included-date>.md` | Cumulative fiscal-year report for a completed weekly run |
-| Incomplete report naming | `reports\fy-start-2026-07-01_through-<last-included-date>.<run-id>.INCOMPLETE.md` | Immutable, non-authoritative synthesis for a stopped weekly run |
+| Completed report naming | `reports\fy-start-2026-07-01_through-<last-included-date>.md` | Cumulative fiscal-year report for a completed scheduled run |
+| Incomplete report naming | `reports\fy-start-2026-07-01_through-<last-included-date>.<run-id>.INCOMPLETE.md` | Immutable, non-authoritative synthesis for a stopped scheduled run |
 | Run naming | `runs\<run-id>.md` | Run state and decisions |
 | Event log naming | `runs\<run-id>.events.jsonl` | Append-only execution events |
-| Continuity search roots | Primary output root, then the current Cowork fallback root when readable | Prior fiscal-year state, occurrence records, digests, checkpoints, and immutable reports |
+| Continuity search roots | Primary output root, then the current Cowork fallback root when readable | Prior scheduled fiscal-year state, occurrence records, digests, checkpoints, and immutable reports |
 | Coverage disclosure | `Primary meeting evidence processing complete; optional enrichment coverage: <status>.` | Report and run file |
 
 Create the output root and required child directories when absent. Do not write generated community-insights
@@ -42,10 +42,8 @@ content into this repository.
 |---|---:|---|
 | Source timezone | `America/New_York` | Coverage, freshness, meeting-date condensation, and source-window boundaries |
 | Fiscal-year start | `2026-07-01T00:00:00-04:00` inclusive | Coverage and recurrence |
-| First weekly boundary | `2026-07-03T00:00:00-04:00` exclusive | First run includes the Thursday, July 2 meeting |
-| Catch-up boundary for this demo | `2026-09-11T00:00:00-04:00` exclusive | Final prepared run includes Thursday, September 10 |
-| Weekly increment | Seven days, Friday-to-Friday | New-run window selection |
-| Active source window | Resolved once per new run from fiscal-year start through the next incomplete weekly boundary | Fixed acceptance boundary |
+| Run boundary schedule | Ordered table in `Run boundary selection` | Initial week, remaining July, August, then weekly September increments |
+| Active source window | Resolved once per new run from fiscal-year start through the next incomplete configured boundary | Fixed acceptance boundary |
 | Primary meeting occurrences | All reconciled series occurrences within the source window | Coverage |
 | Minimum primary evidence | Transcript evidence and summary evidence requirement groups for every occurrence | Coverage floor |
 | Meeting-date digest narrative limit | 20,000 characters | Condensation |
@@ -80,33 +78,44 @@ All Goal Card quality rules remain in force.
 | Meeting-occurrence conversation | `https://teams.microsoft.com/l/message/19:vGhTXeZ7TqvSIz4Kz_dxn_c-ZKikC1ZobNY7h-jcK5o1@thread.tacv2/1781726708875?tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47&groupId=ae25e647-d5e2-45e6-bbd8-8bb8c59d74f5&parentMessageId=1781726708875&teamName=MCAPS%20Lobster%20Pound%20Community&channelName=Lobster%20Pound` | Optional in-window meeting conversation and occurrence context | Read-only | Optional enrichment | Optional |
 | Lobster Pound community channel | `https://teams.microsoft.com/l/channel/19%3AvGhTXeZ7TqvSIz4Kz_dxn_c-ZKikC1ZobNY7h-jcK5o1%40thread.tacv2/Lobster%20Pound?groupId=ae25e647-d5e2-45e6-bbd8-8bb8c59d74f5&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47` | Optional in-window community context and gap repair | Read-only | Optional enrichment | Optional |
 | Community SharePoint documents | `https://microsoft.sharepoint.com/:f:/r/teams/MCAPSLobsterPound/Shared%20Documents/Forms/AllItems.aspx?id=%2Fteams%2FMCAPSLobsterPound%2FShared%20Documents%2FLobster%20Pound&p=true&share=cgpubhse%2D%5FKRS79VMByp3BgvEgUC6CyLWewVUs2xcMwj%2D3YqHQ` | Optional body inspection within the linked-document budget | Read-only | Optional enrichment | Optional |
-| Prior fiscal-year state | Primary output root, then the current Cowork fallback root when readable | Expected prior weekly state and reusable evidence artifacts | Read-only before carry-forward | Continuity state | Required when readable; otherwise disclose |
+| Prior fiscal-year state | Primary output root, then the current Cowork fallback root when readable | Expected prior scheduled state and reusable evidence artifacts | Read-only before carry-forward | Continuity state | Required when readable; otherwise disclose |
 
-### Weekly run selection
+### Run boundary selection
 
 Each `START` resolves, creates, or resumes one run with one fixed cumulative fiscal-year window. Resolve that
 window before Cycle 1:
 
-1. Find the newest completed run for this Goal Card whose window starts at `2026-07-01T00:00:00-04:00` and whose
-   end is one of the Friday weekly boundaries below.
-2. If no matching prior run exists, set the new run end to `2026-07-03T00:00:00-04:00`.
-3. Otherwise set the new run end to the prior completed run end plus seven days, capped at
-   `2026-09-11T00:00:00-04:00`.
-4. Before creating a run file, confirm that the candidate weekly boundary has passed and that every reconciled
+1. Find the newest completed run for this Goal Card whose window starts at the configured fiscal-year start and
+   whose end appears in the ordered schedule below.
+2. If no matching prior run exists, select position 1.
+3. Otherwise select the next schedule position after the prior completed run. Never skip an incomplete position.
+4. Before creating a run file, confirm that the candidate configured boundary has passed and that every reconciled
    non-cancelled occurrence scheduled before it has completed. Derive both values at runtime. When an occurrence is
    still in progress or the candidate boundary is still in the future, report the next eligible boundary without
-   creating a run or consuming the sequence position. A weekly interval containing no occurrence, or only cancelled
-   occurrences, becomes eligible after its boundary passes.
+   creating a run or consuming the sequence position. A scheduled interval containing no occurrence, or only
+   cancelled occurrences, becomes eligible after its boundary passes.
 5. Persist the start, end, prior end, sequence position, and frozen source table in the run file. This is the run's
    acceptance boundary.
-6. Never advance the end date between cycles. After this run completes, another `START` creates the next weekly
+6. Never advance the end date between cycles. After this run completes, another `START` creates the next scheduled
    run. Do not ask for `START` between cycles of the current run.
-7. If the catch-up boundary already has a completed run, report that the demo is caught up and reference that run
-   instead of creating a duplicate analytical run.
+7. If the final schedule position already has a completed run, report that the demo is caught up and reference that
+   run instead of creating a duplicate analytical run.
 
-The weekly boundaries are July 3, 10, 17, 24, and 31; August 7, 14, 21, and 28; and September 4 and 11. A week
-without a meeting still receives its boundary run: record the reconciled cancellation or absence of a scheduled
-occurrence and carry cumulative state forward without inventing activity.
+A completed boundary from an earlier Goal Card or context version remains eligible as prior state when its Goal
+Card path, fiscal-year start, and boundary match. Record the version difference and revalidate every carried source
+checkpoint and artifact against the current frozen contract before reuse. This allows the completed position 1 run
+to seed position 2 without treating old checks as current proof.
+
+| Position | End exclusive | Increment represented |
+|---:|---|---|
+| 1 | `2026-07-03T00:00:00-04:00` | Initial fiscal-year week |
+| 2 | `2026-08-01T00:00:00-04:00` | Remaining July |
+| 3 | `2026-09-01T00:00:00-04:00` | August |
+| 4 | `2026-09-04T00:00:00-04:00` | September week 1 |
+| 5 | `2026-09-11T00:00:00-04:00` | September week 2 |
+
+A scheduled interval without a meeting still receives its boundary run: record the reconciled cancellation or
+absence of a scheduled occurrence and carry cumulative state forward without inventing activity.
 
 ### Evidence processing rules
 
@@ -174,7 +183,8 @@ Before extracting new or changed occurrence evidence:
 1. After the run-start persistence test resolves the writable output root, search the primary output root and the
    readable fallback output root for the latest valid prior run.
 2. Select one coherent prior fiscal-year state set; do not merge conflicting roots. Prefer the newest completed
-   weekly run with the expected prior boundary, then the newest safely interrupted matching run with readable state.
+   scheduled run with the expected prior boundary, then the newest safely interrupted matching run with readable
+   state.
 3. Read and fingerprint `theme-ledger.md`, `themes\`, `commitments.md`, `glossary.md`, `taxonomy.md`,
    `open-questions.md`, prior occurrence records, prior digests, and the prior run's source checkpoints. Record the
    selected prior run, paths, fingerprints, and any rejected candidate in the new run file.
@@ -183,7 +193,7 @@ Before extracting new or changed occurrence evidence:
    before changing them. Preserve stable IDs.
 5. Add new evidence or explicit status history; never replace prior meaning or close a commitment from silence,
    age, or disappearance.
-6. Keep prior reports immutable. Write a new cumulative report for the fixed weekly boundary.
+6. Keep prior reports immutable. Write a new cumulative report for the fixed configured boundary.
 
 If no prior state is readable, record `Prior Run: none` and start a new baseline. This is a visible continuity gap,
 not a reason to stop the current evidence review. The Cowork fallback is best-effort continuity within a session; do
@@ -208,9 +218,7 @@ extraction packet and validation rules to every date.
 |---|---|---|
 | `source_timezone` | `America/New_York` | Window boundaries, timestamps, and meeting-date digest dates |
 | `fiscal_year_start` | `2026-07-01T00:00:00-04:00` | Fixed start for every cumulative run |
-| `first_weekly_boundary` | `2026-07-03T00:00:00-04:00` | First run end, exclusive |
-| `catch_up_boundary` | `2026-09-11T00:00:00-04:00` | Final demo run end, exclusive |
-| `weekly_increment_days` | `7` | Next-run boundary selection |
+| `run_boundary_schedule` | Ordered table in `Run boundary selection` | Next-run boundary selection |
 | `source_classification_freeze` | Full `CONTEXT Sources` table | Fixed acceptance boundary |
 | `knowledge_root` | `C:\Users\bspender\OneDrive - Microsoft\AMA\knowledge` | Required local summary and fallback transcript discovery |
 | `transcript_source_preference` | `graph_first` | Transcript source selection |
@@ -233,7 +241,7 @@ extraction packet and validation rules to every date.
 - Do not access Graph recordings, Graph AI insights, or SharePoint recording folders.
 - Apply `America/New_York` before assigning evidence to a calendar day or evaluating source-window boundaries.
 - Keep the source window persisted at run initialization fixed through every cycle. Ignore and record any attempt
-  to add a later weekly boundary to an active run.
+  to add a later configured boundary to an active run.
 - Keep the full source table and every requirement group and classification persisted at run initialization fixed
   through every cycle. Ignore and record any attempt to weaken or expand it.
 - Do not rewrite or silently repair primary documents or optional-source records; record gaps and conflicts in run state.
@@ -245,7 +253,7 @@ extraction packet and validation rules to every date.
 
 | Goal Card stage | Runtime focus | Inputs or configuration |
 |---|---|---|
-| Inventory evidence | Resolve one weekly boundary, verify output writes, load prior fiscal-year state, reconcile the complete cumulative occurrence set, and classify each source checkpoint as new, changed, or unchanged | Weekly run selection, transcript retrieval, knowledge root, continuity roots, and fixed source window |
+| Inventory evidence | Resolve one configured boundary, verify output writes, load prior fiscal-year state, reconcile the complete cumulative occurrence set, and classify each source checkpoint as new, changed, or unchanged | Run boundary selection, transcript retrieval, knowledge root, continuity roots, and fixed source window |
 | Condense and reconcile | Reuse verified unchanged artifacts, apply the shared extraction packet to new or changed occurrences through bounded children, then integrate cumulative state chronologically | Evidence processing rules, consistent extraction, output paths, and narrative limit |
 | Verify and repair | Recheck source checkpoints, citations, duplicates, contradictions, and overflow gaps | Seven-day overlap and original source IDs |
 | Persist understanding | Write a completed report when every check passes; otherwise write a clearly labelled, non-authoritative incomplete synthesis before stopping | Output preferences |
@@ -266,4 +274,4 @@ No tighter runtime overrides. Inherit all Goal Card stop-caps.
 - Use one child for one new or changed occurrence, or two or three children to cover multiple changed partitions with the same contract. Keep all authoritative writes and integration with the parent.
 - Preserve the 10-cycle cap as design pressure. Each slice has one primary target but may advance multiple affected checks when the evidence supports it.
 - Content and run-state artifacts remain Markdown at either root; the event sidecar remains JSONL. If the primary root rejects either declared format, use the fallback rather than converting to `.docx` or another format.
-- At run start, inspect both approved output roots when readable for the expected prior weekly fiscal-year state and reusable occurrence artifacts. Carry one selected valid state set into the current resolved root; do not synchronize unrelated files. A session-local fallback provides only best-effort continuity and may be unavailable to a later Cowork session.
+- At run start, inspect both approved output roots when readable for the expected prior scheduled fiscal-year state and reusable occurrence artifacts. Carry one selected valid state set into the current resolved root; do not synchronize unrelated files. A session-local fallback provides only best-effort continuity and may be unavailable to a later Cowork session.
